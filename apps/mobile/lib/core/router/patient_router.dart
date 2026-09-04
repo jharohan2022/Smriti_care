@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/asha/assessment/asha_baseline_screen.dart';
+import '../../features/asha/assessment/asha_elder_intro_screen.dart';
+import '../../features/asha/assessment/asha_gameplay_data_screen.dart';
+import '../../features/asha/assessment/asha_memory_game_screen.dart';
+import '../../features/asha/assessment/asha_results_screen.dart';
+import '../../features/asha/assessment/asha_trend_analysis_screen.dart';
+import '../../features/asha/auth/asha_login_screen.dart';
+import '../../features/asha/dashboard/asha_dashboard_screen.dart';
+import '../../features/asha/followup/asha_followup_screen.dart';
+import '../../features/asha/onboarding/onboard_step1_screen.dart';
+import '../../features/asha/onboarding/onboard_step2_screen.dart';
+import '../../features/asha/onboarding/onboard_step3_screen.dart';
+import '../../features/asha/onboarding/onboard_success_screen.dart';
+import '../../features/asha/onboarding/patient_onboard_welcome_screen.dart';
+import '../../features/asha/patients/asha_patient_repository.dart';
 import '../../features/patient/activities/daily_activities_screen.dart';
 import '../../features/patient/asha/connect_asha_screen.dart';
 import '../../features/patient/dashboard/easy_dashboard_screen.dart';
@@ -35,7 +50,12 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: patientState.isDeviceBound ? '/welcome' : '/device-setup',
     redirect: (context, state) {
       final isBound = patientState.isDeviceBound;
-      final isSetupLocation = state.uri.toString() == '/device-setup';
+      final location = state.uri.toString();
+      final isSetupLocation = location == '/device-setup';
+      final isAshaRoute = location.startsWith('/asha');
+
+      // Allow ASHA routes freely
+      if (isAshaRoute) return null;
 
       // First time installation: show device activation setup
       if (!isBound && !isSetupLocation) {
@@ -172,6 +192,73 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/game/pattern-sequence',
         builder: (context, state) => const PatternSequenceGameScreen(),
+      ),
+
+      // ASHA Sathi 14-Screen Workflow Routes
+      GoRoute(
+        path: '/asha/login',
+        builder: (context, state) => const AshaLoginScreen(),
+      ),
+      GoRoute(
+        path: '/asha/dashboard',
+        builder: (context, state) => const AshaDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/asha/onboard',
+        builder: (context, state) => const PatientOnboardWelcomeScreen(),
+      ),
+      GoRoute(
+        path: '/asha/onboard/step1',
+        builder: (context, state) => const OnboardStep1Screen(),
+      ),
+      GoRoute(
+        path: '/asha/onboard/step2',
+        builder: (context, state) => OnboardStep2Screen(
+          prevData: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/asha/onboard/step3',
+        builder: (context, state) => OnboardStep3Screen(
+          prevData: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/asha/onboard/success',
+        builder: (context, state) => OnboardSuccessScreen(
+          patient: state.extra as AshaPatientRecord?,
+        ),
+      ),
+      GoRoute(
+        path: '/asha/assessment/intro',
+        builder: (context, state) => const AshaElderIntroScreen(),
+      ),
+      GoRoute(
+        path: '/asha/assessment/game',
+        builder: (context, state) => const AshaMemoryGameScreen(),
+      ),
+      GoRoute(
+        path: '/asha/assessment/summary',
+        builder: (context, state) => const AshaGameplayDataScreen(),
+      ),
+      GoRoute(
+        path: '/asha/assessment/baseline',
+        builder: (context, state) => const AshaBaselineScreen(),
+      ),
+      GoRoute(
+        path: '/asha/assessment/trend',
+        builder: (context, state) => const AshaTrendAnalysisScreen(),
+      ),
+      GoRoute(
+        path: '/asha/assessment/results',
+        builder: (context, state) => const AshaResultsScreen(),
+      ),
+      GoRoute(
+        path: '/asha/action/:id',
+        builder: (context, state) => AshaFollowupScreen(
+          patientId: state.pathParameters['id']!,
+          patient: state.extra as AshaPatientRecord?,
+        ),
       ),
     ],
   );
