@@ -201,22 +201,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'स्मृति Care — SmritiCare',
+                    'Smarana (स्मरणा) — SmritiCare',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: isPatient ? 28 : 24,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFF0F172A),
+                      fontWeight: FontWeight.w900,
+                      color: isPatient ? const Color(0xFF311B92) : const Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Dementia Care & Cognitive Assessment Portal',
+                    'Har Yaad, Hamare Saath • Cognitive Care Portal',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
+                      color: isPatient ? const Color(0xFFC2185B) : Colors.grey.shade700,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),

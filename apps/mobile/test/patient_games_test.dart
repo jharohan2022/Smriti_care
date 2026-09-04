@@ -16,6 +16,7 @@ import 'package:smriticare_mobile/features/patient/games/shape_position_game_scr
 import 'package:smriticare_mobile/features/patient/games/sound_recall_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/widgets/game_completion_dialog.dart';
 import 'package:smriticare_mobile/features/patient/profile/patient_profile_screen.dart';
+import 'package:smriticare_mobile/features/patient/welcome/patient_welcome_screen.dart';
 
 class _NoOpTtsService implements TtsService {
   @override
@@ -27,6 +28,33 @@ class _NoOpTtsService implements TtsService {
 
 void main() {
   group('Patient Cognitive Games & Profile Test Suite', () {
+    testWidgets('PatientWelcomeScreen renders Smarana branding, quote, hero and CTA button', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: PatientWelcomeScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Smarana'), findsOneWidget);
+      expect(find.textContaining('Har Yaad, Hamare Saath'), findsOneWidget);
+      expect(find.textContaining('Zindagi ke har lamhe ko saath mein'), findsOneWidget);
+      expect(find.textContaining('Chaliye Shuru Karein'), findsOneWidget);
+      expect(find.textContaining('Koi login nahi'), findsOneWidget);
+      expect(find.textContaining('Offline Bhi Kaam Kare'), findsOneWidget);
+    });
     testWidgets('AuthScreen supports patient registration and sign in toggle', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;

@@ -8,6 +8,7 @@ import 'core/router/asha_router.dart';
 import 'core/router/patient_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/auth_screen.dart';
+import 'features/patient/welcome/patient_welcome_screen.dart';
 
 /// SmritiCare unified mobile entrypoint with dynamic role switching:
 ///   flutter run -d <device> -t lib/main_patient.dart
@@ -27,13 +28,13 @@ class SmritiCareApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
 
-    // If not authenticated, present the Role Selection / Auth Screen
+    // If not authenticated, present the Smarana Welcome Screen as the first page
     if (!authState.isAuthenticated) {
       return MaterialApp(
-        title: 'SmritiCare — Sign In',
+        title: 'Smarana — Har Yaad Hamare Saath',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.patient,
-        home: const AuthScreen(),
+        home: const PatientWelcomeScreen(),
       );
     }
 
