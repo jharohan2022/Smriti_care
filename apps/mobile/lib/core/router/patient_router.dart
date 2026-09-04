@@ -41,21 +41,23 @@ import '../../features/patient/profile/patient_profile_screen.dart';
 import '../../features/patient/welcome/device_setup_screen.dart';
 import '../../features/patient/welcome/friendly_greeting_screen.dart';
 import '../../features/patient/welcome/patient_welcome_screen.dart';
+import '../../features/splash/splash_screen.dart';
 import '../services/patient_device_service.dart';
 
 final patientRouterProvider = Provider<GoRouter>((ref) {
   final patientState = ref.watch(patientDeviceProvider);
 
   return GoRouter(
-    initialLocation: patientState.isDeviceBound ? '/welcome' : '/device-setup',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isBound = patientState.isDeviceBound;
       final location = state.uri.toString();
       final isSetupLocation = location == '/device-setup';
+      final isSplash = location == '/splash';
       final isAshaRoute = location.startsWith('/asha');
 
-      // Allow ASHA routes freely
-      if (isAshaRoute) return null;
+      // Allow Splash and ASHA routes freely
+      if (isSplash || isAshaRoute) return null;
 
       // First time installation: show device activation setup
       if (!isBound && !isSetupLocation) {
@@ -70,6 +72,12 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // Splash / Loading Screen
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       // One-time Setup Screen (Only shown upon first install until activated)
       GoRoute(
         path: '/device-setup',
