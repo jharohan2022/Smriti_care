@@ -1,0 +1,37 @@
+# ---- Node / web ----
+node_modules/
+dist/
+.vite/
+*.local
+.env
+.env.*
+!.env.example
+
+# ---- Flutter / Dart ----
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.g.dart.lock
+ios/Pods/
+android/.gradle/
+*.iml
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+
+# ---- Misc ----
+.DS_Store
+.idea/
+.vscode/
+.claude/
+coverage/
+*.log
+

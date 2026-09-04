@@ -1,0 +1,72 @@
+# SmritiCare local stack. Production uses per-region deployments (see admin portal).
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: smriti
+      POSTGRES_PASSWORD: smriti
+      POSTGRES_DB: smriti
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smriti"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  gateway:
+    build:
+      context: ../services
+      dockerfile: gateway/Dockerfile
+    environment:
+      IDENTITY_URL: http://identity-service:8000
+      TELEMETRY_URL: http://telemetry-service:8000
+      BHASHINI_URL: http://bhashini-gateway:8000
+      REDIS_URL: redis://redis:6379/0
+    ports: ["8080:8000"]
+    depends_on: [identity-service, telemetry-service, bhashini-gateway]
+
+  identity-service:
+    build:
+      context: ../services
+      dockerfile: identity-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://smriti:smriti@postgres:5432/smriti
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  telemetry-service:
+    build:
+      context: ../services
+      dockerfile: telemetry-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://smriti:smriti@postgres:5432/smriti
+      REDIS_URL: redis://redis:6379/1
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  bhashini-gateway:
+    build:
+      context: ../services
+      dockerfile: bhashini-gateway/Dockerfile
+    environment:
+      BHASHINI_API_KEY: ${BHASHINI_API_KEY:-changeme}
+      BHASHINI_BASE_URL: ${BHASHINI_BASE_URL:-https://dhruva-api.bhashini.gov.in}
+      REDIS_URL: redis://redis:6379/2
+    depends_on:
+      redis: { condition: service_healthy }
+
+volumes:
+  pgdata:
