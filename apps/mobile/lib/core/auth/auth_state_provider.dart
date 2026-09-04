@@ -11,6 +11,11 @@ class MobileAuthUser {
     required this.role,
     this.region = 'Default',
     this.language = 'hi',
+    this.age,
+    this.gender,
+    this.caregiverName,
+    this.caregiverPhone,
+    this.medicalNotes,
   });
 
   final String userId;
@@ -18,6 +23,11 @@ class MobileAuthUser {
   final AppFlavor role;
   final String region;
   final String language;
+  final int? age;
+  final String? gender;
+  final String? caregiverName;
+  final String? caregiverPhone;
+  final String? medicalNotes;
 
   Map<String, dynamic> toJson() => {
         'userId': userId,
@@ -25,6 +35,11 @@ class MobileAuthUser {
         'role': role == AppFlavor.patient ? 'patient' : 'asha',
         'region': region,
         'language': language,
+        if (age != null) 'age': age,
+        if (gender != null) 'gender': gender,
+        if (caregiverName != null) 'caregiverName': caregiverName,
+        if (caregiverPhone != null) 'caregiverPhone': caregiverPhone,
+        if (medicalNotes != null) 'medicalNotes': medicalNotes,
       };
 
   factory MobileAuthUser.fromJson(Map<String, dynamic> json) => MobileAuthUser(
@@ -33,6 +48,11 @@ class MobileAuthUser {
         role: (json['role'] as String?) == 'asha' ? AppFlavor.asha : AppFlavor.patient,
         region: json['region'] as String? ?? 'Default',
         language: json['language'] as String? ?? 'hi',
+        age: json['age'] as int?,
+        gender: json['gender'] as String?,
+        caregiverName: json['caregiverName'] as String?,
+        caregiverPhone: json['caregiverPhone'] as String?,
+        medicalNotes: json['medicalNotes'] as String?,
       );
 }
 
@@ -66,6 +86,8 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
 
   final FlutterSecureStorage _storage;
   static const _userKey = 'smriticare_mobile_auth_user';
+  static const _kPatientId = 'smriti.patientId';
+  static const _kDeviceSecret = 'smriti.deviceSecret';
 
   Future<void> _loadStoredSession() async {
     try {
@@ -89,20 +111,65 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
     ));
   }
 
+  Future<void> registerPatient({
+    required String name,
+    required int age,
+    required String gender,
+    required String village,
+    required String caregiverName,
+    required String caregiverPhone,
+    String? patientId,
+    String language = 'hi',
+    String? medicalNotes,
+  }) async {
+    final generatedId = patientId != null && patientId.trim().isNotEmpty
+        ? patientId.trim()
+        : 'PAT-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+
+    final user = MobileAuthUser(
+      userId: generatedId,
+      name: name,
+      role: AppFlavor.patient,
+      region: village,
+      language: language,
+      age: age,
+      gender: gender,
+      caregiverName: caregiverName,
+      caregiverPhone: caregiverPhone,
+      medicalNotes: medicalNotes,
+    );
+
+    _applyRoleConfig(AppFlavor.patient);
+    await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+    await _storage.write(key: _kPatientId, value: generatedId);
+    await _storage.write(key: _kDeviceSecret, value: 'device-sec-${DateTime.now().millisecondsSinceEpoch}');
+
+    state = state.copyWith(user: user);
+  }
+
   Future<void> loginPatient({
     required String name,
+    String? patientId,
     String village = 'Rampur Village',
     String language = 'hi',
   }) async {
+    final id = patientId != null && patientId.trim().isNotEmpty
+        ? patientId.trim()
+        : 'p-${name.toLowerCase().replaceAll(' ', '')}';
+
     final user = MobileAuthUser(
-      userId: 'p-${name.toLowerCase().replaceAll(' ', '')}',
+      userId: id,
       name: name,
       role: AppFlavor.patient,
       region: village,
       language: language,
     );
+
     _applyRoleConfig(AppFlavor.patient);
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+    await _storage.write(key: _kPatientId, value: id);
+    await _storage.write(key: _kDeviceSecret, value: 'device-sec-local');
+
     state = state.copyWith(user: user);
   }
 
@@ -131,6 +198,11 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
       role: newRole,
       region: state.user!.region,
       language: state.user!.language,
+      age: state.user!.age,
+      gender: state.user!.gender,
+      caregiverName: state.user!.caregiverName,
+      caregiverPhone: state.user!.caregiverPhone,
+      medicalNotes: state.user!.medicalNotes,
     );
     _applyRoleConfig(newRole);
     await _storage.write(key: _userKey, value: jsonEncode(updated.toJson()));

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smriticare_mobile/core/services/tts_service.dart';
+import 'package:smriticare_mobile/features/auth/auth_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/games_hub_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/face_match_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/sound_recall_game_screen.dart';
@@ -17,7 +18,47 @@ class _NoOpTtsService implements TtsService {
 }
 
 void main() {
-  group('Patient Cognitive Games Test Suite', () {
+  group('Patient Cognitive Games & Registration Test Suite', () {
+    testWidgets('AuthScreen supports patient registration and sign in toggle', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: AuthScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Check Patient tab is selected by default
+      expect(find.text('👤 Patient'), findsOneWidget);
+      expect(find.text('मरीज लॉगिन (Sign In)'), findsOneWidget);
+      expect(find.text('START CARE SESSION'), findsOneWidget);
+
+      // Tap Register New toggle
+      await tester.tap(find.text('Register New'));
+      await tester.pump();
+
+      // Verify Patient Registration form fields are rendered
+      expect(find.text('मरीज पंजीकरण (Registration)'), findsOneWidget);
+      expect(find.textContaining('Age (उम्र)'), findsOneWidget);
+      expect(find.textContaining('Gender (लिंग)'), findsOneWidget);
+      expect(find.textContaining('Caregiver / Family Contact'), findsOneWidget);
+      expect(find.textContaining('Emergency Phone Number'), findsOneWidget);
+      expect(find.text('REGISTER & START CARE'), findsOneWidget);
+    });
+
     testWidgets('GamesHubScreen displays all 4 accessible games', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;

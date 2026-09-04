@@ -15,12 +15,21 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   AppFlavor _selectedRole = AppFlavor.patient;
-  bool _isSignUp = false;
+  bool _isPatientSignUp = false;
+  bool _isAshaSignUp = false;
 
-  // Patient Controllers
+  // Patient Login & Registration Controllers
   final _patientNameController = TextEditingController(text: 'Ramesh Kumar');
+  final _patientIdController = TextEditingController();
+  final _patientAgeController = TextEditingController(text: '68');
   final _patientVillageController = TextEditingController(text: 'Rampur Village');
+  final _caregiverNameController = TextEditingController(text: 'Suresh Kumar');
+  final _caregiverPhoneController = TextEditingController(text: '9876543210');
+  final _medicalNotesController = TextEditingController();
+
+  String _patientGender = 'Male (पुरुष)';
   String _selectedLanguage = 'hi';
+  String _cognitiveStage = 'Mild Memory Loss (प्रारंभिक स्मृति ह्रास)';
 
   // ASHA Controllers
   final _ashaIdController = TextEditingController(text: 'ASHA-8841');
@@ -45,7 +54,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   void dispose() {
     _patientNameController.dispose();
+    _patientIdController.dispose();
+    _patientAgeController.dispose();
     _patientVillageController.dispose();
+    _caregiverNameController.dispose();
+    _caregiverPhoneController.dispose();
+    _medicalNotesController.dispose();
     _ashaIdController.dispose();
     _ashaNameController.dispose();
     _ashaPinController.dispose();
@@ -56,7 +70,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Future<void> _handlePatientSubmit() async {
     final name = _patientNameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _errorMessage = 'Please enter patient name');
+      setState(() => _errorMessage = 'Please enter patient name (कृपया मरीज का नाम दर्ज करें)');
       return;
     }
 
@@ -66,13 +80,49 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
 
     try {
-      await ref.read(authStateProvider.notifier).loginPatient(
-            name: name,
-            village: _patientVillageController.text.trim().isNotEmpty
-                ? _patientVillageController.text.trim()
-                : 'Local Village',
-            language: _selectedLanguage,
-          );
+      if (_isPatientSignUp) {
+        final age = int.tryParse(_patientAgeController.text.trim()) ?? 65;
+        final village = _patientVillageController.text.trim().isNotEmpty
+            ? _patientVillageController.text.trim()
+            : 'Rampur Village';
+        final caregiverName = _caregiverNameController.text.trim().isNotEmpty
+            ? _caregiverNameController.text.trim()
+            : 'Family Member';
+        final caregiverPhone = _caregiverPhoneController.text.trim().isNotEmpty
+            ? _caregiverPhoneController.text.trim()
+            : '9876543210';
+
+        await ref.read(authStateProvider.notifier).registerPatient(
+              name: name,
+              age: age,
+              gender: _patientGender,
+              village: village,
+              caregiverName: caregiverName,
+              caregiverPhone: caregiverPhone,
+              patientId: _patientIdController.text.trim().isNotEmpty ? _patientIdController.text.trim() : null,
+              language: _selectedLanguage,
+              medicalNotes: _cognitiveStage,
+            );
+
+        ref.read(ttsServiceProvider).speak(
+              'Registration successful. Welcome $name ji to Smriti Care.',
+              langCode: _selectedLanguage,
+            );
+      } else {
+        await ref.read(authStateProvider.notifier).loginPatient(
+              name: name,
+              patientId: _patientIdController.text.trim().isNotEmpty ? _patientIdController.text.trim() : null,
+              village: _patientVillageController.text.trim().isNotEmpty
+                  ? _patientVillageController.text.trim()
+                  : 'Rampur Village',
+              language: _selectedLanguage,
+            );
+
+        ref.read(ttsServiceProvider).speak(
+              'Welcome back $name ji.',
+              langCode: _selectedLanguage,
+            );
+      }
     } catch (e) {
       setState(() => _errorMessage = 'Could not start session: $e');
     } finally {
@@ -121,7 +171,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+              constraints: const BoxConstraints(maxWidth: 500),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,7 +199,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   Text(
                     'स्मृति Care — SmritiCare',
                     textAlign: TextAlign.center,
@@ -159,16 +209,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       color: const Color(0xFF0F172A),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
-                    'Dementia Care & ASHA Cognitive Monitoring',
+                    'Dementia Care & Cognitive Assessment Portal',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Role Selection Toggle
                   Container(
@@ -195,7 +246,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 _errorMessage = null;
                               });
                               ref.read(ttsServiceProvider).speak(
-                                    'Patient Mode selected. Tap Start Care to begin.',
+                                    'Patient Mode selected.',
                                     langCode: 'en',
                                   );
                             },
@@ -273,7 +324,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   if (_errorMessage != null)
                     Container(
@@ -284,20 +335,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.red.shade200),
                       ),
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red.shade800, fontSize: 13),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(color: Colors.red.shade800, fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                  // Card Content
+                  // Main Card Content
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: isPatient ? Colors.amber.shade200 : Colors.blue.shade200,
+                        color: isPatient ? const Color(0xFFFFD54F) : Colors.blue.shade200,
                         width: 1.5,
                       ),
                       boxShadow: [
@@ -323,57 +382,203 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Mode Header + Toggle
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Patient Care Mode',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF00695C)),
+            Expanded(
+              child: Text(
+                _isPatientSignUp ? 'मरीज पंजीकरण (Registration)' : 'मरीज लॉगिन (Sign In)',
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF00695C)),
+              ),
             ),
-            IconButton(
-              tooltip: 'Voice Help',
-              icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF00695C), size: 28),
+            TextButton.icon(
               onPressed: () {
+                setState(() {
+                  _isPatientSignUp = !_isPatientSignUp;
+                  _errorMessage = null;
+                });
                 ref.read(ttsServiceProvider).speak(
-                      'Welcome. Enter your name or tap Start Care to begin your memory exercises.',
-                      langCode: _selectedLanguage,
+                      _isPatientSignUp
+                          ? 'Patient Registration Form. Please enter your details.'
+                          : 'Patient Sign In.',
+                      langCode: 'en',
                     );
               },
+              icon: Icon(
+                _isPatientSignUp ? Icons.login_rounded : Icons.app_registration_rounded,
+                size: 18,
+                color: const Color(0xFF00695C),
+              ),
+              label: Text(
+                _isPatientSignUp ? 'Sign In' : 'Register New',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00695C)),
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const Divider(height: 20),
+
+        // Full Name Field
         TextField(
           controller: _patientNameController,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
           decoration: InputDecoration(
-            labelText: 'Patient Name (मरीज का नाम)',
-            labelStyle: const TextStyle(fontSize: 15),
+            labelText: 'Patient Full Name (मरीज का पूरा नाम) *',
+            labelStyle: const TextStyle(fontSize: 14),
             prefixIcon: const Icon(Icons.badge_rounded, color: Color(0xFF00695C)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             filled: true,
-            fillColor: const Color(0xFFFFF8E1).withOpacity(0.5),
+            fillColor: const Color(0xFFFFF9E6),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
+
+        if (_isPatientSignUp) ...[
+          // Age and Gender Row
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: _patientAgeController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                    labelText: 'Age (उम्र) *',
+                    prefixIcon: const Icon(Icons.cake_rounded, color: Color(0xFF00695C)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: const Color(0xFFFFF9E6),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 3,
+                child: DropdownButtonFormField<String>(
+                  value: _patientGender,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    labelText: 'Gender (लिंग)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: const Color(0xFFFFF9E6),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'Male (पुरुष)', child: Text('Male (पुरुष)')),
+                    DropdownMenuItem(value: 'Female (महिला)', child: Text('Female (महिला)')),
+                    DropdownMenuItem(value: 'Other (अन्य)', child: Text('Other (अन्य)')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setState(() => _patientGender = val);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Caregiver Contact Name
+          TextField(
+            controller: _caregiverNameController,
+            style: const TextStyle(fontSize: 16),
+            decoration: InputDecoration(
+              labelText: 'Caregiver / Family Contact (देखभालकर्ता का नाम)',
+              prefixIcon: const Icon(Icons.family_restroom_rounded, color: Color(0xFF00695C)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: const Color(0xFFFFF9E6),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Caregiver Phone
+          TextField(
+            controller: _caregiverPhoneController,
+            keyboardType: TextInputType.phone,
+            style: const TextStyle(fontSize: 16),
+            decoration: InputDecoration(
+              labelText: 'Emergency Phone Number (आपातकालीन फोन नंबर)',
+              prefixIcon: const Icon(Icons.phone_rounded, color: Color(0xFF00695C)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: const Color(0xFFFFF9E6),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Cognitive Stage / Condition
+          DropdownButtonFormField<String>(
+            value: _cognitiveStage,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: 'Cognitive Observation (स्मृति स्थिति)',
+              prefixIcon: const Icon(Icons.psychology_rounded, color: Color(0xFF00695C)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: const Color(0xFFFFF9E6),
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 'Mild Memory Loss (प्रारंभिक स्मृति ह्रास)',
+                child: Text('Mild (प्रारंभिक)'),
+              ),
+              DropdownMenuItem(
+                value: 'Moderate Dementia (मध्यम डिमेंशिया)',
+                child: Text('Moderate (मध्यम)'),
+              ),
+              DropdownMenuItem(
+                value: 'Healthy Elderly Screening (नियमित जांच)',
+                child: Text('Routine (नियमित)'),
+              ),
+            ],
+            onChanged: (val) {
+              if (val != null) setState(() => _cognitiveStage = val);
+            },
+          ),
+          const SizedBox(height: 12),
+        ] else ...[
+          // Optional Patient ID on Login
+          TextField(
+            controller: _patientIdController,
+            style: const TextStyle(fontSize: 16),
+            decoration: InputDecoration(
+              labelText: 'Patient ID (मरीज पहचान पत्र - Optional)',
+              hintText: 'e.g. PAT-8841',
+              prefixIcon: const Icon(Icons.tag_rounded, color: Color(0xFF00695C)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              filled: true,
+              fillColor: const Color(0xFFFFF9E6),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Village / Town
         TextField(
           controller: _patientVillageController,
           style: const TextStyle(fontSize: 16),
           decoration: InputDecoration(
-            labelText: 'Village / Town (गाँव / शहर)',
+            labelText: 'Village / Town (गाँव / कस्बा)',
             prefixIcon: const Icon(Icons.location_city_rounded, color: Color(0xFF00695C)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             filled: true,
-            fillColor: const Color(0xFFFFF8E1).withOpacity(0.5),
+            fillColor: const Color(0xFFFFF9E6),
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
+
+        // Language Dropdown
         DropdownButtonFormField<String>(
           value: _selectedLanguage,
+          isExpanded: true,
           decoration: InputDecoration(
-            labelText: 'Voice Language (भाषा)',
+            labelText: 'Voice Language (आवाज़ की भाषा)',
             prefixIcon: const Icon(Icons.language_rounded, color: Color(0xFF00695C)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: const Color(0xFFFFF9E6),
           ),
           items: const [
             DropdownMenuItem(value: 'hi', child: Text('हिन्दी (Hindi)')),
@@ -385,7 +590,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             if (val != null) setState(() => _selectedLanguage = val);
           },
         ),
+
         const SizedBox(height: 20),
+
+        // Submit Button
         ElevatedButton(
           onPressed: _loading ? null : _handlePatientSubmit,
           style: ElevatedButton.styleFrom(
@@ -401,33 +609,36 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   width: 24,
                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                 )
-              : const Row(
+              : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.play_circle_fill_rounded, size: 28),
-                    SizedBox(width: 10),
+                    Icon(_isPatientSignUp ? Icons.how_to_reg_rounded : Icons.play_circle_fill_rounded, size: 28),
+                    const SizedBox(width: 10),
                     Text(
-                      'START CARE SESSION',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                      _isPatientSignUp ? 'REGISTER & START CARE' : 'START CARE SESSION',
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: 0.5),
                     ),
                   ],
                 ),
         ),
-        const SizedBox(height: 14),
-        OutlinedButton(
-          onPressed: () {
-            _patientNameController.text = 'Ramesh Kumar';
-            _patientVillageController.text = 'Rampur Village';
-            _handlePatientSubmit();
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF00695C),
-            side: const BorderSide(color: Color(0xFF00695C)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.symmetric(vertical: 12),
+
+        if (!_isPatientSignUp) ...[
+          const SizedBox(height: 12),
+          OutlinedButton(
+            onPressed: () {
+              _patientNameController.text = 'Ramesh Kumar';
+              _patientVillageController.text = 'Rampur Village';
+              _handlePatientSubmit();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF00695C),
+              side: const BorderSide(color: Color(0xFF00695C), width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: const Text('⚡ Quick 1-Tap Demo Patient (Ramesh)'),
           ),
-          child: const Text('⚡ Quick 1-Tap Demo Patient (Ramesh)'),
-        ),
+        ],
       ],
     );
   }
@@ -439,20 +650,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              _isSignUp ? 'ASHA Onboarding' : 'ASHA Worker Login',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
+            Expanded(
+              child: Text(
+                _isAshaSignUp ? 'ASHA Onboarding' : 'ASHA Worker Login',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1565C0)),
+              ),
             ),
             TextButton(
-              onPressed: () => setState(() => _isSignUp = !_isSignUp),
+              onPressed: () => setState(() => _isAshaSignUp = !_isAshaSignUp),
               child: Text(
-                _isSignUp ? 'Sign In' : 'Register New',
+                _isAshaSignUp ? 'Sign In' : 'Register New',
                 style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1565C0)),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 14),
+        const Divider(height: 20),
         TextField(
           controller: _ashaIdController,
           decoration: InputDecoration(
@@ -461,37 +674,38 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
-        if (_isSignUp) ...[
-          const SizedBox(height: 12),
+        const SizedBox(height: 14),
+        if (_isAshaSignUp) ...[
           TextField(
             controller: _ashaNameController,
             decoration: InputDecoration(
               labelText: 'Worker Full Name',
-              prefixIcon: const Icon(Icons.person_outline_rounded, color: Color(0xFF1565C0)),
+              prefixIcon: const Icon(Icons.person_rounded, color: Color(0xFF1565C0)),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-        ],
-        const SizedBox(height: 12),
-        TextField(
-          controller: _ashaCenterController,
-          decoration: InputDecoration(
-            labelText: 'Sub-Center / Jurisdiction',
-            prefixIcon: const Icon(Icons.local_hospital_rounded, color: Color(0xFF1565C0)),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _ashaCenterController,
+            decoration: InputDecoration(
+              labelText: 'Assigned Sub-Center / PHC',
+              prefixIcon: const Icon(Icons.location_city_rounded, color: Color(0xFF1565C0)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
+          const SizedBox(height: 14),
+        ],
         TextField(
           controller: _ashaPinController,
           obscureText: true,
+          keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: 'Security PIN / Password',
+            labelText: 'Security PIN (4 digits)',
             prefixIcon: const Icon(Icons.lock_rounded, color: Color(0xFF1565C0)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _loading ? null : _handleAshaSubmit,
           style: ElevatedButton.styleFrom(
@@ -499,34 +713,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            elevation: 3,
           ),
           child: _loading
               ? const SizedBox(
                   height: 22,
                   width: 22,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                 )
               : Text(
-                  _isSignUp ? 'REGISTER ASHA ACCOUNT' : 'SIGN IN TO ASHA PORTAL',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  _isAshaSignUp ? 'REGISTER ASHA ACCOUNT' : 'SIGN IN TO ASHA PORTAL',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton(
-          onPressed: () {
-            _ashaIdController.text = 'ASHA-8841';
-            _ashaNameController.text = 'Sunita Devi';
-            _ashaPinController.text = '1234';
-            _handleAshaSubmit();
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF1565C0),
-            side: const BorderSide(color: Color(0xFF1565C0)),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            padding: const EdgeInsets.symmetric(vertical: 12),
-          ),
-          child: const Text('⚡ Quick 1-Tap Demo ASHA (Sunita Devi)'),
         ),
       ],
     );
