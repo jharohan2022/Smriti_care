@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/patient/dashboard/easy_dashboard_screen.dart';
+import '../../features/patient/games/face_match_game_screen.dart';
 import '../../features/patient/games/game_telemetry_screen.dart';
+import '../../features/patient/games/games_hub_screen.dart';
+import '../../features/patient/games/pattern_sequence_game_screen.dart';
+import '../../features/patient/games/sound_recall_game_screen.dart';
 import '../../features/patient/welcome/patient_welcome_screen.dart';
 import '../services/tts_service.dart';
 import '../theme/app_theme.dart';
@@ -18,6 +22,14 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/', builder: (_, __) => const PatientWelcomeScreen()),
       GoRoute(path: '/home', builder: (_, __) => const EasyDashboardScreen()),
+      GoRoute(path: '/games', builder: (_, __) => const GamesHubScreen()),
+      GoRoute(path: '/game/face-match', builder: (_, __) => const FaceMatchGameScreen()),
+      GoRoute(path: '/game/sound-recall', builder: (_, __) => const SoundRecallGameScreen()),
+      GoRoute(path: '/game/pattern-sequence', builder: (_, __) => const PatternSequenceGameScreen()),
+      GoRoute(
+        path: '/game/reaction-tap',
+        builder: (_, __) => const GameTelemetryScreen(gameId: 'reaction-tap'),
+      ),
       GoRoute(
         path: '/game/:gameId',
         builder: (_, state) =>
@@ -42,6 +54,7 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
 
 /// Zero-literacy error boundary: big calm icon, auto-narration, one giant way back.
 class _PatientErrorScreen extends ConsumerWidget {

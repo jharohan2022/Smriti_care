@@ -83,7 +83,7 @@ class EasyDashboardScreen extends ConsumerWidget {
                         label: 'Games',
                         imageAsset: 'assets/images/games.jpg',
                         fallbackIcon: Icons.extension_rounded,
-                        onTap: () => context.go('/game/memory-match'),
+                        onTap: () => context.go('/games'),
                       ),
                       const SizedBox(height: 20),
                       PhotoCard(
