@@ -2,148 +2,151 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/patient/activities/daily_activities_screen.dart';
+import '../../features/patient/asha/connect_asha_screen.dart';
 import '../../features/patient/dashboard/easy_dashboard_screen.dart';
+import '../../features/patient/end_screen/end_celebration_screen.dart';
 import '../../features/patient/games/complete_pattern_game_screen.dart';
 import '../../features/patient/games/daily_sequencing_game_screen.dart';
 import '../../features/patient/games/day_season_game_screen.dart';
 import '../../features/patient/games/face_match_game_screen.dart';
 import '../../features/patient/games/find_target_game_screen.dart';
-import '../../features/patient/games/game_telemetry_screen.dart';
 import '../../features/patient/games/games_hub_screen.dart';
+import '../../features/patient/games/memory_cards_game_screen.dart';
 import '../../features/patient/games/pattern_sequence_game_screen.dart';
 import '../../features/patient/games/picture_word_match_game_screen.dart';
 import '../../features/patient/games/remember_objects_game_screen.dart';
 import '../../features/patient/games/shape_position_game_screen.dart';
 import '../../features/patient/games/sound_recall_game_screen.dart';
+import '../../features/patient/games/word_recall_game_screen.dart';
+import '../../features/patient/inspiration/daily_inspiration_screen.dart';
+import '../../features/patient/mood/mood_check_screen.dart';
 import '../../features/patient/navigation/patient_bottom_nav_scaffold.dart';
 import '../../features/patient/profile/patient_profile_screen.dart';
+import '../../features/patient/welcome/friendly_greeting_screen.dart';
 import '../../features/patient/welcome/patient_welcome_screen.dart';
-import '../services/tts_service.dart';
-import '../theme/app_theme.dart';
 
-/// Patient navigation. Flat and shallow by design with persistent bottom navigation bar
-/// for 1-tap movement across Home, Games, Routine, Profile, and Helper.
 final patientRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/',
-    errorBuilder: (context, state) => const _PatientErrorScreen(),
+    initialLocation: '/welcome',
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const PatientWelcomeScreen()),
-      
-      // Main Persistent Shell with Bottom Navigation Bar
+      // 1. Welcome Screen
+      GoRoute(
+        path: '/welcome',
+        builder: (context, state) => const PatientWelcomeScreen(),
+      ),
+
+      // 2. Friendly Greeting (Voice First)
+      GoRoute(
+        path: '/greeting',
+        builder: (context, state) => const FriendlyGreetingScreen(),
+      ),
+
+      // Shell Route for Persistent 5-Tab Bottom Navigation
       ShellRoute(
-        builder: (context, state, child) => PatientBottomNavScaffold(child: child),
+        builder: (context, state, child) {
+          return PatientBottomNavScaffold(child: child);
+        },
         routes: [
-          GoRoute(path: '/home', builder: (_, __) => const EasyDashboardScreen()),
-          GoRoute(path: '/games', builder: (_, __) => const GamesHubScreen()),
-          GoRoute(path: '/profile', builder: (_, __) => const PatientProfileScreen()),
+          // 3. Home Dashboard (Daily Companionship)
           GoRoute(
-            path: '/routine',
-            builder: (_, __) => const _PlaceholderScreen(
-              title: 'My Day (दिनचर्या)',
-              icon: Icons.wb_sunny_rounded,
-              narration: 'Here is your daily routine and schedule for today.',
-            ),
+            path: '/home',
+            builder: (context, state) => const EasyDashboardScreen(),
           ),
+
+          // Games Hub (Khel)
           GoRoute(
-            path: '/asha-connect',
-            builder: (_, __) => const _PlaceholderScreen(
-              title: 'Call Helper (मदद)',
-              icon: Icons.support_agent_rounded,
-              narration: 'Connecting you to your health helper and ASHA worker.',
-            ),
+            path: '/khel',
+            builder: (context, state) => const GamesHubScreen(),
+          ),
+
+          // 5. Daily Inspiration (Suno)
+          GoRoute(
+            path: '/suno',
+            builder: (context, state) => const DailyInspirationScreen(),
+          ),
+
+          // 6. Connect with ASHA (Saath)
+          GoRoute(
+            path: '/saath',
+            builder: (context, state) => const ConnectAshaScreen(),
+          ),
+
+          // Aur / Profile / Settings (1-Device 1-Patient, No Logout, ASHA Admin Mode)
+          GoRoute(
+            path: '/aur',
+            builder: (context, state) => const PatientProfileScreen(),
           ),
         ],
       ),
 
-      // Individual Cognitive & Memory Game Screens
-      GoRoute(path: '/game/remember-objects', builder: (_, __) => const RememberObjectsGameScreen()),
-      GoRoute(path: '/game/find-target', builder: (_, __) => const FindTargetGameScreen()),
-      GoRoute(path: '/game/complete-pattern', builder: (_, __) => const CompletePatternGameScreen()),
-      GoRoute(path: '/game/picture-word-match', builder: (_, __) => const PictureWordMatchGameScreen()),
-      GoRoute(path: '/game/day-season', builder: (_, __) => const DaySeasonGameScreen()),
-      GoRoute(path: '/game/shape-position', builder: (_, __) => const ShapePositionGameScreen()),
-      GoRoute(path: '/game/daily-sequencing', builder: (_, __) => const DailySequencingGameScreen()),
-      GoRoute(path: '/game/face-match', builder: (_, __) => const FaceMatchGameScreen()),
-      GoRoute(path: '/game/sound-recall', builder: (_, __) => const SoundRecallGameScreen()),
-      GoRoute(path: '/game/pattern-sequence', builder: (_, __) => const PatternSequenceGameScreen()),
+      // Flow & Game Routes
       GoRoute(
-        path: '/game/reaction-tap',
-        builder: (_, __) => const GameTelemetryScreen(gameId: 'reaction-tap'),
+        path: '/activities',
+        builder: (context, state) => const DailyActivitiesScreen(),
       ),
       GoRoute(
-        path: '/game/:gameId',
-        builder: (_, state) =>
-            GameTelemetryScreen(gameId: state.pathParameters['gameId'] ?? 'memory-match'),
+        path: '/mood-check',
+        builder: (context, state) => const MoodCheckScreen(),
+      ),
+      GoRoute(
+        path: '/end-screen',
+        builder: (context, state) => const EndCelebrationScreen(),
+      ),
+
+      // Games
+      GoRoute(
+        path: '/game/memory-cards',
+        builder: (context, state) => const MemoryCardsGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/word-recall',
+        builder: (context, state) => const WordRecallGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/family-match',
+        builder: (context, state) => const FaceMatchGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/face-match',
+        builder: (context, state) => const FaceMatchGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/remember-objects',
+        builder: (context, state) => const RememberObjectsGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/find-target',
+        builder: (context, state) => const FindTargetGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/complete-pattern',
+        builder: (context, state) => const CompletePatternGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/picture-word-match',
+        builder: (context, state) => const PictureWordMatchGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/day-season',
+        builder: (context, state) => const DaySeasonGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/shape-position',
+        builder: (context, state) => const ShapePositionGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/daily-sequencing',
+        builder: (context, state) => const DailySequencingGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/sound-recall',
+        builder: (context, state) => const SoundRecallGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/pattern-sequence',
+        builder: (context, state) => const PatternSequenceGameScreen(),
       ),
     ],
   );
 });
-
-/// Zero-literacy error boundary: big calm icon, auto-narration, one giant way back.
-class _PatientErrorScreen extends ConsumerWidget {
-  const _PatientErrorScreen();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ttsServiceProvider).speak('Something went wrong. Let us go back home.');
-    });
-    return Scaffold(
-      backgroundColor: A11y.patientSurface,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.favorite_rounded, size: 120, color: A11y.patientPrimary),
-              const SizedBox(height: 24),
-              const Text('Let us go back', style: TextStyle(fontSize: A11y.patientHeadline)),
-              const SizedBox(height: 40),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/home'),
-                icon: const Icon(Icons.home_rounded, size: 48),
-                label: const Text('Home'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends ConsumerWidget {
-  const _PlaceholderScreen({required this.title, required this.icon, required this.narration});
-  final String title;
-  final IconData icon;
-  final String narration;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ttsServiceProvider).speak(narration);
-    });
-    return Scaffold(
-      backgroundColor: A11y.patientSurface,
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 140, color: A11y.patientPrimary),
-              const SizedBox(height: 24),
-              Text(title, style: const TextStyle(fontSize: A11y.patientHeadline)),
-              const SizedBox(height: 40),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/home'),
-                icon: const Icon(Icons.home_rounded, size: 48),
-                label: const Text('Home'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

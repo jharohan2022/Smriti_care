@@ -6,27 +6,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/database/models/telemetry_event.dart';
 import '../../../core/services/device_identity_service.dart';
+import '../../../core/services/family_members_service.dart';
 import '../../../core/services/tts_service.dart';
 import '../../../core/sync/sync_manager.dart';
 import 'widgets/game_completion_dialog.dart';
-
-class FamilyMemberTarget {
-  const FamilyMemberTarget({
-    required this.id,
-    required this.name,
-    required this.relationHi,
-    required this.relationEn,
-    required this.icon,
-    required this.color,
-  });
-
-  final String id;
-  final String name;
-  final String relationHi;
-  final String relationEn;
-  final IconData icon;
-  final Color color;
-}
 
 class FaceMatchGameScreen extends ConsumerStatefulWidget {
   const FaceMatchGameScreen({super.key});
@@ -36,49 +19,14 @@ class FaceMatchGameScreen extends ConsumerStatefulWidget {
 }
 
 class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
-  static const List<FamilyMemberTarget> _allMembers = [
-    FamilyMemberTarget(
-      id: 'daughter',
-      name: 'Priya (प्रिया)',
-      relationHi: 'आपकी बेटी (Daughter)',
-      relationEn: 'Your Daughter',
-      icon: Icons.face_3_rounded,
-      color: Color(0xFFE91E63),
-    ),
-    FamilyMemberTarget(
-      id: 'son',
-      name: 'Rahul (राहुल)',
-      relationHi: 'आपका बेटा (Son)',
-      relationEn: 'Your Son',
-      icon: Icons.face_rounded,
-      color: Color(0xFF1976D2),
-    ),
-    FamilyMemberTarget(
-      id: 'grandson',
-      name: 'Aarav (आरव)',
-      relationHi: 'आपका पोता (Grandson)',
-      relationEn: 'Your Grandson',
-      icon: Icons.child_care_rounded,
-      color: Color(0xFFF57C00),
-    ),
-    FamilyMemberTarget(
-      id: 'asha',
-      name: 'Sunita Didi (सुनीता दीदी)',
-      relationHi: 'आपकी आशा सहायिका (ASHA Helper)',
-      relationEn: 'Your ASHA Health Helper',
-      icon: Icons.medical_services_rounded,
-      color: Color(0xFF00897B),
-    ),
-  ];
-
   int _currentRound = 0;
   int _correctCount = 0;
   final _stopwatch = Stopwatch();
   final _rng = math.Random();
 
-  late List<FamilyMemberTarget> _roundTargets;
-  late FamilyMemberTarget _currentTarget;
-  late List<FamilyMemberTarget> _currentOptions;
+  late List<FamilyMember> _roundTargets;
+  late FamilyMember _currentTarget;
+  late List<FamilyMember> _currentOptions;
   String? _selectedId;
   bool _isAnswered = false;
   Timer? _roundTimer;
@@ -96,22 +44,26 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
   }
 
   void _startNewGame() {
-    _roundTargets = List.of(_allMembers)..shuffle(_rng);
+    final allMembers = ref.read(familyMembersProvider);
+    if (allMembers.isEmpty) return;
+
+    _roundTargets = List.of(allMembers)..shuffle(_rng);
     _currentRound = 0;
     _correctCount = 0;
     _loadRound();
   }
 
   void _loadRound() {
+    final allMembers = ref.read(familyMembersProvider);
     _selectedId = null;
     _isAnswered = false;
     _currentTarget = _roundTargets[_currentRound % _roundTargets.length];
 
     // Pick options including correct one
-    final options = <FamilyMemberTarget>{_currentTarget};
-    final others = List.of(_allMembers)..removeWhere((m) => m.id == _currentTarget.id);
+    final options = <FamilyMember>{_currentTarget};
+    final others = List.of(allMembers)..removeWhere((m) => m.id == _currentTarget.id);
     others.shuffle(_rng);
-    while (options.length < 2 && others.isNotEmpty) {
+    while (options.length < 3 && others.isNotEmpty) {
       options.add(others.removeLast());
     }
 
@@ -123,13 +75,13 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
 
     // Narrate instruction
     ref.read(ttsServiceProvider).speak(
-          'Find ${_currentTarget.name}. ${_currentTarget.relationHi} kahan hain?',
+          '${_currentTarget.name} को पहचानिए। ${_currentTarget.relation} कहाँ हैं?',
           langCode: 'hi',
         );
     setState(() {});
   }
 
-  void _handleOptionSelect(FamilyMemberTarget selected) {
+  void _handleOptionSelect(FamilyMember selected) {
     if (_isAnswered) return;
     _stopwatch.stop();
     final elapsedMs = _stopwatch.elapsedMilliseconds;
@@ -149,14 +101,20 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
 
     // Audio Feedback
     if (isCorrect) {
-      ref.read(ttsServiceProvider).speak('शाबाश! यह ${_currentTarget.name} हैं।', langCode: 'hi');
+      ref.read(ttsServiceProvider).speak(
+            'शाबाश! यह ${_currentTarget.name} हैं। ${_currentTarget.voiceClipText ?? ""}',
+            langCode: 'hi',
+          );
     } else {
-      ref.read(ttsServiceProvider).speak('यह ${_currentTarget.name} हैं। कोई बात नहीं, आगे बढ़ते हैं।', langCode: 'hi');
+      ref.read(ttsServiceProvider).speak(
+            'यह ${_currentTarget.name} हैं। कोई बात नहीं, आगे बढ़ते हैं।',
+            langCode: 'hi',
+          );
     }
 
     // Move to next round
     _roundTimer?.cancel();
-    _roundTimer = Timer(const Duration(milliseconds: 1600), () {
+    _roundTimer = Timer(const Duration(milliseconds: 2200), () {
       if (!mounted) return;
       if (_currentRound + 1 < _roundTargets.length) {
         setState(() => _currentRound++);
@@ -188,7 +146,7 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
       barrierDismissible: false,
       builder: (ctx) => GameCompletionDialog(
         title: 'बहुत बढ़िया! (Well Done!)',
-        subtitle: 'You completed the Family Photo Match!\n($_correctCount/${_roundTargets.length} Correct)',
+        subtitle: 'You matched your family members!\n($_correctCount/${_roundTargets.length} Correct)',
         stars: stars,
         onPlayAgain: _startNewGame,
       ),
@@ -197,50 +155,61 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const brandPurple = Color(0xFF6B4EE6);
+    const textDark = Color(0xFF1E1B4B);
+
+    final allMembers = ref.watch(familyMembersProvider);
+    if (allMembers.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Family Match')),
+        body: const Center(child: Text('No family members added yet.')),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF9E6),
+      backgroundColor: const Color(0xFFF8F9FE),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 32, color: Color(0xFF00695C)),
-          onPressed: () => context.go('/games'),
+          icon: const Icon(Icons.arrow_back_rounded, size: 28, color: textDark),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Family Photo Match',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF00695C)),
+          'Apno Ki Pehchan (Family Match)',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textDark),
         ),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF00695C).withOpacity(0.12),
+              color: brandPurple.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               '${_currentRound + 1} / ${_roundTargets.length}',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF00695C)),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: brandPurple),
             ),
           ),
         ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Prompt Question Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFFFD54F), width: 2),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: const Color(0xFFDDD6FE), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: brandPurple.withOpacity(0.06),
                       blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
@@ -249,9 +218,9 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 36,
-                      backgroundColor: _currentTarget.color.withOpacity(0.15),
-                      child: Icon(_currentTarget.icon, size: 44, color: _currentTarget.color),
+                      radius: 34,
+                      backgroundColor: _currentTarget.avatarColor.withOpacity(0.15),
+                      child: Icon(_currentTarget.icon, size: 40, color: _currentTarget.avatarColor),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -259,26 +228,26 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Find (पहचानिए):',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.grey),
+                            'Pehchaniye (पहचानिए):',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                           ),
                           Text(
                             _currentTarget.name,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark),
                           ),
                           Text(
-                            _currentTarget.relationHi,
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: _currentTarget.color),
+                            _currentTarget.relation,
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _currentTarget.avatarColor),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Repeat Voice Prompt',
-                      icon: const Icon(Icons.volume_up_rounded, size: 36, color: Color(0xFF00695C)),
+                      tooltip: 'Voice Prompt',
+                      icon: const Icon(Icons.volume_up_rounded, size: 30, color: brandPurple),
                       onPressed: () {
                         ref.read(ttsServiceProvider).speak(
-                              'Please tap on ${_currentTarget.name}. ${_currentTarget.relationHi}',
+                              '${_currentTarget.name} को पहचानिए। ${_currentTarget.relation}',
                               langCode: 'hi',
                             );
                       },
@@ -287,82 +256,82 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 18),
               const Center(
                 child: Text(
-                  'Tap the matching photo card below:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF334155)),
+                  'Neeche sahi tasveer par tap karein:',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
-              // Options Grid
+              // Dynamic Options List
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
                   itemCount: _currentOptions.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, idx) {
                     final option = _currentOptions[idx];
                     final isSelected = _selectedId == option.id;
                     final isCorrect = option.id == _currentTarget.id;
 
-                    Color borderColor = Colors.grey.shade300;
+                    Color borderColor = const Color(0xFFE2E8F0);
                     Color bgColor = Colors.white;
 
                     if (_isAnswered) {
                       if (isCorrect) {
-                        borderColor = const Color(0xFF2E7D32);
-                        bgColor = const Color(0xFFE8F5E9);
+                        borderColor = const Color(0xFF10B981);
+                        bgColor = const Color(0xFFECFDF5);
                       } else if (isSelected) {
-                        borderColor = const Color(0xFFC62828);
-                        bgColor = const Color(0xFFFFEBEE);
+                        borderColor = const Color(0xFFEF4444);
+                        bgColor = const Color(0xFFFEF2F2);
                       }
                     }
 
                     return InkWell(
                       onTap: () => _handleOptionSelect(option),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        duration: const Duration(milliseconds: 250),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                         decoration: BoxDecoration(
                           color: bgColor,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: borderColor,
-                            width: isSelected || (_isAnswered && isCorrect) ? 3 : 1.5,
+                            width: isSelected || (_isAnswered && isCorrect) ? 2.5 : 1.5,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withOpacity(0.02),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: option.color.withOpacity(0.14),
+                                color: option.avatarColor.withOpacity(0.14),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(option.icon, size: 40, color: option.color),
+                              child: Icon(option.icon, size: 34, color: option.avatarColor),
                             ),
-                            const SizedBox(width: 18),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     option.name,
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textDark),
                                   ),
                                   Text(
-                                    option.relationEn,
-                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+                                    option.relation,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: option.avatarColor),
                                   ),
                                 ],
                               ),
@@ -370,8 +339,8 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                             if (_isAnswered)
                               Icon(
                                 isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                color: isCorrect ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
-                                size: 36,
+                                color: isCorrect ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                size: 30,
                               ),
                           ],
                         ),

@@ -2,147 +2,358 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/auth/auth_state_provider.dart';
-import '../../../core/config/flavor_config.dart';
-import '../widgets/photo_card.dart';
-import '../widgets/tts_narrator.dart';
+import '../../../core/services/patient_device_service.dart';
+import '../../../core/services/tts_service.dart';
 
-
-/// The patient's home. Three large photographic cards — Games, Routine, and
-/// ASHA Connect — and a persistent "Listen" button. This is the primary
-/// dashboard for the Patient role.
 class EasyDashboardScreen extends ConsumerWidget {
   const EasyDashboardScreen({super.key});
 
-  static const _narration =
-      'This is your home. Choose Games to play, My Day for your routine, '
-      'or Call Helper to reach your health helper.';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return TtsNarrator(
-      text: _narration,
-      child: Scaffold(
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+    final patient = ref.watch(patientDeviceProvider);
+
+    const brandPurple = Color(0xFF6B4EE6);
+    const textDark = Color(0xFF1E1B4B);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FE),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Header with Patient Avatar & Settings Gear
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 26,
+                    backgroundColor: const Color(0xFFEDE9FE),
+                    child: const Text(
+                      '👴',
+                      style: TextStyle(fontSize: 28),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 44,
-                          width: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFE1BEE7), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Image.asset('assets/images/app_logo.png', fit: BoxFit.contain),
-                            ),
+                        const Text(
+                          'Namaste!',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF6B7280),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        const Column(
+                        Text(
+                          'Aaj ka din kaisa hai?',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: textDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined, color: Color(0xFF4B5563), size: 26),
+                    onPressed: () => context.go('/aur'),
+                    tooltip: 'Settings / Aur',
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+
+              // Hero Card: "Aaj ka Smarana Saath ➔"
+              GestureDetector(
+                onTap: () {
+                  ref.read(ttsServiceProvider).speak('आज का स्मरण साथ शुरू कर रहे हैं।');
+                  context.push('/mood-check');
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFEF3C7), Color(0xFFDCFCE7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: const Text('🌄', style: TextStyle(fontSize: 28)),
+                      ),
+                      const SizedBox(width: 16),
+                      const Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Home', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, height: 1.1)),
                             Text(
-                              'Smarana (स्मरणा)',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.account_circle_rounded, size: 40, color: Color(0xFF00695C)),
-                          tooltip: 'Account & Mode',
-                          onSelected: (val) {
-                            if (val == 'switch') {
-                              ref.read(authStateProvider.notifier).switchRole(AppFlavor.asha);
-                            } else if (val == 'logout') {
-                              ref.read(authStateProvider.notifier).logout();
-                            }
-                          },
-                          itemBuilder: (ctx) => [
-                            const PopupMenuItem(
-                              value: 'switch',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.medical_services_rounded, color: Color(0xFF1565C0)),
-                                  SizedBox(width: 8),
-                                  Text('Switch to ASHA Mode'),
-                                ],
+                              'Aaj ka Smarana Saath',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF166534),
                               ),
                             ),
-                            const PopupMenuItem(
-                              value: 'logout',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.logout_rounded, color: Colors.red),
-                                  SizedBox(width: 8),
-                                  Text('Sign Out / Change Role'),
-                                ],
+                            SizedBox(height: 2),
+                            Text(
+                              'Daily check-in, mood & fun activities',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF15803D),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(width: 8),
-                        const ListenButton(text: _narration, size: 64),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                Expanded(
-                  child: ListView(
-                    children: [
-                      PhotoCard(
-                        label: 'Games',
-                        imageAsset: 'assets/images/games.jpg',
-                        fallbackIcon: Icons.extension_rounded,
-                        onTap: () => context.go('/games'),
                       ),
-                      const SizedBox(height: 20),
-                      PhotoCard(
-                        label: 'My Day',
-                        imageAsset: 'assets/images/routine.jpg',
-                        fallbackIcon: Icons.wb_sunny_rounded,
-                        accent: const Color(0xFFEF6C00),
-                        onTap: () => context.go('/routine'),
-                      ),
-                      const SizedBox(height: 20),
-                      PhotoCard(
-                        label: 'Call Helper',
-                        imageAsset: 'assets/images/asha.jpg',
-                        fallbackIcon: Icons.support_agent_rounded,
-                        accent: const Color(0xFF2E7D32),
-                        onTap: () => context.go('/asha-connect'),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: brandPurple,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Action Card 1: Yaadasht Khel (Memory Games)
+              _buildActionCard(
+                title: 'Yaadasht Khel',
+                subtitle: '7 Clinical memory & cognitive brain games',
+                icon: Icons.extension_rounded,
+                iconColor: const Color(0xFFE11D48),
+                bgColor: const Color(0xFFFFF1F2),
+                borderColor: const Color(0xFFFECDD3),
+                arrowColor: const Color(0xFFE11D48),
+                onTap: () => context.go('/khel'),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Action Card 2: Thoda Gyaan Thodi Baatein (Wisdom & Stories)
+              _buildActionCard(
+                title: 'Thoda Gyaan Thodi Baatein',
+                subtitle: 'Daily thought, wellness tips & inspiration',
+                icon: Icons.menu_book_rounded,
+                iconColor: const Color(0xFF059669),
+                bgColor: const Color(0xFFECFDF5),
+                borderColor: const Color(0xFFA7F3D0),
+                arrowColor: const Color(0xFF059669),
+                onTap: () => context.go('/suno'),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Action Card 3: Man Ko Khush Rakhein (Music & Joy)
+              _buildActionCard(
+                title: 'Man Ko Khush Rakhein',
+                subtitle: 'Relaxing bhajan, songs & deep breathing',
+                icon: Icons.music_note_rounded,
+                iconColor: brandPurple,
+                bgColor: const Color(0xFFF5F3FF),
+                borderColor: const Color(0xFFDDD6FE),
+                arrowColor: brandPurple,
+                onTap: () => context.push('/activities'),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Action Card 4: Apno se Jude Raho (Family Photo Connect)
+              _buildActionCard(
+                title: 'Apno se Jude Raho',
+                subtitle: 'Match photos & memories of loved ones',
+                icon: Icons.people_alt_rounded,
+                iconColor: const Color(0xFF0284C7),
+                bgColor: const Color(0xFFF0F9FF),
+                borderColor: const Color(0xFFBAE6FD),
+                arrowColor: const Color(0xFF0284C7),
+                onTap: () => context.push('/game/face-match'),
+              ),
+
+              const SizedBox(height: 18),
+
+              // Reassuring ASHA Direct Dial Banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Color(0xFFDCFCE7),
+                      child: Text('👩‍⚕️', style: TextStyle(fontSize: 20)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            patient.ashaName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: textDark,
+                            ),
+                          ),
+                          const Text(
+                            'Aapki Sahayata Ke Liye Hamesha Taiyar',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => context.go('/saath'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.call, size: 16),
+                          SizedBox(width: 4),
+                          Text('Baat Karein', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required Color borderColor,
+    required Color arrowColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: iconColor.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: iconColor, size: 26),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1E1B4B),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: arrowColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ],
         ),
       ),
     );

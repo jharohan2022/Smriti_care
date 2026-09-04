@@ -4,33 +4,34 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/services/tts_service.dart';
 
-/// Persistent accessible bottom navigation bar for patient mode.
-/// Huge tap targets, high contrast, bilingual titles, and audio feedback.
+/// Persistent accessible bottom navigation bar matching the 5-tab Smarana design:
+/// Home, Khel (खेल), Suno (सुनो), Saath (साथ), Aur (और)
 class PatientBottomNavScaffold extends ConsumerWidget {
   const PatientBottomNavScaffold({super.key, required this.child});
   final Widget child;
 
   static const List<({String route, IconData icon, String labelHi, String labelEn})> _tabs = [
     (route: '/home', icon: Icons.home_rounded, labelHi: 'होम', labelEn: 'Home'),
-    (route: '/games', icon: Icons.extension_rounded, labelHi: 'खेल', labelEn: 'Games'),
-    (route: '/routine', icon: Icons.wb_sunny_rounded, labelHi: 'दिनचर्या', labelEn: 'My Day'),
-    (route: '/profile', icon: Icons.person_rounded, labelHi: 'प्रोफ़ाइल', labelEn: 'Profile'),
-    (route: '/asha-connect', icon: Icons.support_agent_rounded, labelHi: 'मदद', labelEn: 'Helper'),
+    (route: '/khel', icon: Icons.extension_rounded, labelHi: 'खेल', labelEn: 'Khel'),
+    (route: '/suno', icon: Icons.volume_up_rounded, labelHi: 'सुनो', labelEn: 'Suno'),
+    (route: '/saath', icon: Icons.people_alt_rounded, labelHi: 'साथ', labelEn: 'Saath'),
+    (route: '/aur', icon: Icons.menu_rounded, labelHi: 'और', labelEn: 'Aur'),
   ];
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/games') || location.startsWith('/game')) return 1;
-    if (location.startsWith('/routine')) return 2;
-    if (location.startsWith('/profile')) return 3;
-    if (location.startsWith('/asha-connect')) return 4;
+    if (location.startsWith('/khel') || location.startsWith('/game') || location.startsWith('/games')) return 1;
+    if (location.startsWith('/suno')) return 2;
+    if (location.startsWith('/saath') || location.startsWith('/asha-connect')) return 3;
+    if (location.startsWith('/aur') || location.startsWith('/profile') || location.startsWith('/routine')) return 4;
     return 0;
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _calculateSelectedIndex(context);
+    const brandPurple = Color(0xFF6B4EE6);
 
     return Scaffold(
       body: child,
@@ -39,13 +40,13 @@ class PatientBottomNavScaffold extends ConsumerWidget {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withOpacity(0.06),
               blurRadius: 16,
-              offset: const Offset(0, -4),
+              offset: const Offset(0, -3),
             ),
           ],
           border: const Border(
-            top: BorderSide(color: Color(0xFFFFD54F), width: 2),
+            top: BorderSide(color: Color(0xFFEDE9FE), width: 1.5),
           ),
         ),
         child: SafeArea(
@@ -62,7 +63,7 @@ class PatientBottomNavScaffold extends ConsumerWidget {
                     onTap: () {
                       if (selectedIndex != index) {
                         ref.read(ttsServiceProvider).speak(
-                              'Opening ${tab.labelEn}. ${tab.labelHi}',
+                              '${tab.labelHi}',
                               langCode: 'hi',
                             );
                         context.go(tab.route);
@@ -71,9 +72,9 @@ class PatientBottomNavScaffold extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF00695C).withOpacity(0.12) : Colors.transparent,
+                        color: isSelected ? const Color(0xFFEDE9FE) : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -81,18 +82,18 @@ class PatientBottomNavScaffold extends ConsumerWidget {
                         children: [
                           Icon(
                             tab.icon,
-                            size: isSelected ? 30 : 26,
-                            color: isSelected ? const Color(0xFF00695C) : Colors.grey.shade600,
+                            size: isSelected ? 28 : 24,
+                            color: isSelected ? brandPurple : const Color(0xFF64748B),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
-                            tab.labelHi,
+                            tab.labelEn,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: isSelected ? 13 : 11,
+                              fontSize: isSelected ? 12 : 11,
                               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                              color: isSelected ? const Color(0xFF00695C) : Colors.grey.shade700,
+                              color: isSelected ? brandPurple : const Color(0xFF64748B),
                             ),
                           ),
                         ],
