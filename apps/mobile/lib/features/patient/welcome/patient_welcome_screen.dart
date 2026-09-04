@@ -151,12 +151,12 @@ class _PatientWelcomeScreenState extends ConsumerState<PatientWelcomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Big Action Button: "Chaliye Shuru Karein ➔"
               SizedBox(
                 width: double.infinity,
-                height: 62,
+                height: 60,
                 child: ElevatedButton(
                   onPressed: () {
                     context.go('/greeting');
@@ -176,7 +176,7 @@ class _PatientWelcomeScreenState extends ConsumerState<PatientWelcomeScreen> {
                       Text(
                         'Chaliye Shuru Karein',
                         style: TextStyle(
-                          fontSize: 19,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.2,
                         ),
@@ -184,6 +184,49 @@ class _PatientWelcomeScreenState extends ConsumerState<PatientWelcomeScreen> {
                       SizedBox(width: 10),
                       Icon(Icons.arrow_forward_rounded, size: 24),
                     ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ASHA Sathi Application Access Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.push('/asha/login');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFECFDF5),
+                    foregroundColor: const Color(0xFF065F46),
+                    elevation: 2,
+                    shadowColor: const Color(0xFF059669).withOpacity(0.25),
+                    side: const BorderSide(color: Color(0xFF059669), width: 1.8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.health_and_safety_rounded, color: Color(0xFF059669), size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          'ASHA Sathi App (आशा साथी पोर्टल)',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF065F46),
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward_rounded, color: Color(0xFF059669), size: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),

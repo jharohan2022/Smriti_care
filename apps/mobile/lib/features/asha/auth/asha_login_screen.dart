@@ -12,9 +12,8 @@ class AshaLoginScreen extends ConsumerStatefulWidget {
   ConsumerState<AshaLoginScreen> createState() => _AshaLoginScreenState();
 }
 
-class _AshaLoginScreenState extends ConsumerState<AshaLoginScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AshaLoginScreenState extends ConsumerState<AshaLoginScreen> {
+  int _selectedTabIndex = 0; // 0: Login, 1: Register
 
   // Login Controllers
   final _loginPhoneController = TextEditingController(text: '9876543210');
@@ -31,14 +30,7 @@ class _AshaLoginScreenState extends ConsumerState<AshaLoginScreen>
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
   void dispose() {
-    _tabController.dispose();
     _loginPhoneController.dispose();
     _loginPasswordController.dispose();
     _regNameController.dispose();
@@ -93,6 +85,35 @@ class _AshaLoginScreenState extends ConsumerState<AshaLoginScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Top Navigation Back Bar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded, color: textDark),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/welcome');
+                      }
+                    },
+                    tooltip: 'Back to Elder Mode',
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFA7F3D0)),
+                    ),
+                    child: const Text(
+                      'ASHA Sathi Portal',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: emeraldBrand),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
 
               // Header Branding
@@ -198,174 +219,207 @@ class _AshaLoginScreenState extends ConsumerState<AshaLoginScreen>
 
               const SizedBox(height: 20),
 
-              // Tab Bar for Login & Register
+              // Segmented Switch for Login & Register
               Container(
-                height: 48,
+                height: 50,
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE2E8F0),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: emeraldBrand,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: const Color(0xFF475569),
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                  tabs: const [
-                    Tab(text: 'Login (लॉग इन)'),
-                    Tab(text: 'Register (पंजीकरण)'),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedTabIndex = 0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _selectedTabIndex == 0 ? emeraldBrand : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Login (लॉग इन)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: _selectedTabIndex == 0 ? Colors.white : const Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedTabIndex = 1),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _selectedTabIndex == 1 ? emeraldBrand : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'Register (पंजीकरण)',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: _selectedTabIndex == 1 ? Colors.white : const Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              // Form Container
-              SizedBox(
-                height: 380,
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Login Tab Form
-                    Column(
-                      children: [
-                        TextField(
-                          controller: _loginPhoneController,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            labelText: 'Mobile Number (मोबाइल नंबर)',
-                            prefixIcon: const Icon(Icons.phone_rounded, color: emeraldBrand),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        TextField(
-                          controller: _loginPasswordController,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Password / PIN (पासवर्ड)',
-                            prefixIcon: const Icon(Icons.lock_rounded, color: emeraldBrand),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Contact Sub-Center Admin to reset PIN.')),
-                              );
-                            },
-                            child: const Text('Forgot Password? (पासवर्ड भूल गए?)'),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: emeraldBrand,
-                              foregroundColor: Colors.white,
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: _isLoading
-                                ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text('Login (लॉग इन करें)',
-                                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
-                          ),
-                        ),
-                      ],
-                    ),
+              // Form Body
+              if (_selectedTabIndex == 0) _buildLoginForm(emeraldBrand) else _buildRegisterForm(emeraldBrand),
 
-                    // Registration Tab Form
-                    SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _regNameController,
-                            decoration: InputDecoration(
-                              labelText: 'ASHA Full Name (आशा कार्यकर्ता का नाम)',
-                              prefixIcon: const Icon(Icons.badge_rounded, color: emeraldBrand),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: _regIdController,
-                            decoration: InputDecoration(
-                              labelText: 'ASHA ID (आशा पहचान संख्या)',
-                              prefixIcon: const Icon(Icons.fingerprint_rounded, color: emeraldBrand),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: _regPhoneController,
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              labelText: 'Mobile Number',
-                              prefixIcon: const Icon(Icons.phone_rounded, color: emeraldBrand),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: _regVillageController,
-                            decoration: InputDecoration(
-                              labelText: 'Assigned Village (आवंटित गाँव)',
-                              prefixIcon: const Icon(Icons.location_city_rounded, color: emeraldBrand),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextField(
-                            controller: _regPasswordController,
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              labelText: 'Create PIN (4-digit PIN)',
-                              prefixIcon: const Icon(Icons.lock_rounded, color: emeraldBrand),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 54,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleRegister,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: emeraldBrand,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : const Text('Naya Panjikaran Karein',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLoginForm(Color emeraldBrand) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _loginPhoneController,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: 'Mobile Number (मोबाइल नंबर)',
+            prefixIcon: const Icon(Icons.phone_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: _loginPasswordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Password / PIN (पासवर्ड)',
+            prefixIcon: const Icon(Icons.lock_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Contact Sub-Center Admin to reset PIN.')),
+              );
+            },
+            child: const Text('Forgot Password? (पासवर्ड भूल गए?)'),
+          ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: emeraldBrand,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Login (लॉग इन करें)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegisterForm(Color emeraldBrand) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _regNameController,
+          decoration: InputDecoration(
+            labelText: 'ASHA Full Name (आशा कार्यकर्ता का नाम)',
+            prefixIcon: const Icon(Icons.badge_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regIdController,
+          decoration: InputDecoration(
+            labelText: 'ASHA ID (आशा पहचान संख्या)',
+            prefixIcon: const Icon(Icons.fingerprint_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regPhoneController,
+          keyboardType: TextInputType.phone,
+          decoration: InputDecoration(
+            labelText: 'Mobile Number',
+            prefixIcon: const Icon(Icons.phone_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regSubCenterController,
+          decoration: InputDecoration(
+            labelText: 'Sub-Center (उप-केंद्र)',
+            prefixIcon: const Icon(Icons.local_hospital_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regVillageController,
+          decoration: InputDecoration(
+            labelText: 'Assigned Village (आवंटित गाँव)',
+            prefixIcon: const Icon(Icons.location_city_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _regPasswordController,
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Create PIN (4-digit PIN)',
+            prefixIcon: const Icon(Icons.lock_rounded, color: Color(0xFF059669)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleRegister,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: emeraldBrand,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Naya Panjikaran Karein', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          ),
+        ),
+      ],
     );
   }
 }

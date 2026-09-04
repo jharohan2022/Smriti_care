@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/services/family_members_service.dart';
 import '../../../core/services/patient_device_service.dart';
@@ -124,6 +125,27 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
               style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
             ),
             const SizedBox(height: 20),
+
+            // Option 0: Launch ASHA Sathi Clinical Portal (14 Screens)
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.health_and_safety_rounded, color: Color(0xFF059669)),
+              ),
+              title: const Text('Open ASHA Sathi App (आशा साथी पोर्टल)', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF065F46))),
+              subtitle: const Text('Access 14-screen Clinical Portal & Mere Buzurg'),
+              trailing: const Icon(Icons.chevron_right, color: Color(0xFF059669)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/asha/dashboard');
+              },
+            ),
+
+            const Divider(),
 
             // Option 1: Add/Edit Dynamic Family Member
             ListTile(

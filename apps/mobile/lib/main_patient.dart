@@ -28,35 +28,16 @@ class SmritiCareApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
 
-    // If not authenticated, present the Smarana Welcome Screen as the first page
-    if (!authState.isAuthenticated) {
-      return MaterialApp(
-        title: 'Smarana — Har Yaad Hamare Saath',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.patient,
-        home: const PatientWelcomeScreen(),
-      );
-    }
+    final isAsha = authState.activeRole == AppFlavor.asha;
+    final router = isAsha ? ref.watch(ashaRouterProvider) : ref.watch(patientRouterProvider);
+    final theme = isAsha ? AppTheme.asha : AppTheme.patient;
 
-    // Dynamic switching between Patient and ASHA interfaces
-    if (authState.activeRole == AppFlavor.asha) {
-      final ashaRouter = ref.watch(ashaRouterProvider);
-      return MaterialApp.router(
-        key: const ValueKey('asha_flavor_app'),
-        title: 'SmritiCare — ASHA',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.asha,
-        routerConfig: ashaRouter,
-      );
-    }
-
-    final patientRouter = ref.watch(patientRouterProvider);
     return MaterialApp.router(
-      key: const ValueKey('patient_flavor_app'),
-      title: 'SmritiCare — Patient',
+      key: ValueKey('smriticare_app_${authState.activeRole.name}'),
+      title: 'Smarana / ASHA Sathi',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.patient,
-      routerConfig: patientRouter,
+      theme: theme,
+      routerConfig: router,
     );
   }
 }

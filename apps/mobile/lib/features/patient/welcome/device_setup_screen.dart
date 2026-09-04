@@ -266,6 +266,48 @@ class _DeviceSetupScreenState extends ConsumerState<DeviceSetupScreen> {
                 ),
               ),
 
+              const SizedBox(height: 14),
+
+              // Direct ASHA Sathi App Entry Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.push('/asha/login');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFECFDF5),
+                    foregroundColor: const Color(0xFF065F46),
+                    elevation: 2,
+                    side: const BorderSide(color: Color(0xFF059669), width: 1.8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.health_and_safety_rounded, color: Color(0xFF059669), size: 22),
+                        SizedBox(width: 8),
+                        Text(
+                          'ASHA Sathi App (आशा साथी लॉगिन व डैशबोर्ड)',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF065F46),
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward_rounded, color: Color(0xFF059669), size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 16),
             ],
           ),
