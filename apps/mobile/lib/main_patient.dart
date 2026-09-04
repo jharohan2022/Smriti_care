@@ -16,7 +16,7 @@ void main() => bootstrap(
       config: const FlavorConfig(
         flavor: AppFlavor.patient,
         apiBaseUrl: String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:8080'),
-        appTitle: 'SmritiCare',
+        appTitle: 'Smarana',
       ),
       appBuilder: () => const SmritiCareApp(),
     );
