@@ -49,13 +49,14 @@ class PatientOnboardWelcomeScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('👵', style: TextStyle(fontSize: 60)),
-                        SizedBox(width: 16),
-                        Text('👴', style: TextStyle(fontSize: 60)),
-                      ],
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        height: 90,
+                        width: 90,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     const Text(

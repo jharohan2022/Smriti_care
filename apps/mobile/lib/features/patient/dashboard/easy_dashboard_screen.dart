@@ -26,12 +26,18 @@ class EasyDashboardScreen extends ConsumerWidget {
               // Top Header with Patient Avatar & Settings Gear
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 26,
-                    backgroundColor: const Color(0xFFEDE9FE),
-                    child: const Text(
-                      '👴',
-                      style: TextStyle(fontSize: 28),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.asset(
+                      'assets/images/app_logo.png',
+                      height: 48,
+                      width: 48,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Color(0xFFEDE9FE),
+                        child: Text('👴', style: TextStyle(fontSize: 24)),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 14),

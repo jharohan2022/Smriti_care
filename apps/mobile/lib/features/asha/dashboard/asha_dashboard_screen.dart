@@ -41,6 +41,14 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset(
+            'assets/images/app_logo.png',
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const Icon(Icons.spa, color: emeraldBrand),
+          ),
+        ),
         title: const Text(
           'Mere Buzurg',
           style: TextStyle(
