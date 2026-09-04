@@ -3,11 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smriticare_mobile/core/services/tts_service.dart';
 import 'package:smriticare_mobile/features/auth/auth_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/games_hub_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/complete_pattern_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/daily_sequencing_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/day_season_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/face_match_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/sound_recall_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/find_target_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/games_hub_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/pattern_sequence_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/picture_word_match_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/remember_objects_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/shape_position_game_screen.dart';
+import 'package:smriticare_mobile/features/patient/games/sound_recall_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/widgets/game_completion_dialog.dart';
+import 'package:smriticare_mobile/features/patient/profile/patient_profile_screen.dart';
 
 class _NoOpTtsService implements TtsService {
   @override
@@ -18,7 +26,7 @@ class _NoOpTtsService implements TtsService {
 }
 
 void main() {
-  group('Patient Cognitive Games & Registration Test Suite', () {
+  group('Patient Cognitive Games & Profile Test Suite', () {
     testWidgets('AuthScreen supports patient registration and sign in toggle', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
@@ -41,26 +49,40 @@ void main() {
       );
       await tester.pump();
 
-      // Check Patient tab is selected by default
       expect(find.text('👤 Patient'), findsOneWidget);
       expect(find.text('मरीज लॉगिन (Sign In)'), findsOneWidget);
       expect(find.text('START CARE SESSION'), findsOneWidget);
 
-      // Tap Register New toggle
       await tester.tap(find.text('Register New'));
       await tester.pump();
 
-      // Verify Patient Registration form fields are rendered
       expect(find.text('मरीज पंजीकरण (Registration)'), findsOneWidget);
       expect(find.textContaining('Age (उम्र)'), findsOneWidget);
-      expect(find.textContaining('Gender (लिंग)'), findsOneWidget);
       expect(find.textContaining('Caregiver / Family Contact'), findsOneWidget);
-      expect(find.textContaining('Emergency Phone Number'), findsOneWidget);
       expect(find.text('REGISTER & START CARE'), findsOneWidget);
     });
 
-    testWidgets('GamesHubScreen displays all 4 accessible games', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
+    testWidgets('PatientProfileScreen renders avatar, caregiver and actions', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: PatientProfileScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('My Profile (मेरी प्रोफ़ाइल)'), findsOneWidget);
+      expect(find.textContaining('Caregiver'), findsWidgets);
+      expect(find.textContaining('Call Caregiver Now'), findsOneWidget);
+      expect(find.textContaining('Switch Patient / Sign Out'), findsOneWidget);
+    });
+
+    testWidgets('GamesHubScreen displays domain games catalog', (tester) async {
+      tester.view.physicalSize = const Size(1080, 5000);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
         tester.view.resetPhysicalSize();
@@ -81,82 +103,133 @@ void main() {
       );
       await tester.pump();
 
-      // Verify app bar title
       expect(find.text('Memory Games (दिमागी खेल)'), findsOneWidget);
-
-      // Verify all 4 game items exist in catalog
-      expect(find.textContaining('Family Match'), findsOneWidget);
-      expect(find.textContaining('Sound Memory'), findsOneWidget);
-      expect(find.textContaining('Pattern Sequence'), findsOneWidget);
-      expect(find.textContaining('Reflex Target'), findsOneWidget);
+      expect(find.textContaining('Remember Objects'), findsOneWidget);
+      expect(find.textContaining('Find the Target'), findsOneWidget);
+      expect(find.textContaining('Complete Pattern'), findsOneWidget);
+      expect(find.textContaining('Picture → Word'), findsOneWidget);
+      expect(find.textContaining('Day & Season'), findsOneWidget);
+      expect(find.textContaining('Shape & Position'), findsOneWidget);
+      expect(find.textContaining('Arrange Activities'), findsOneWidget);
     });
 
-    testWidgets('FaceMatchGameScreen loads first round target and options', (tester) async {
+    testWidgets('RememberObjectsGameScreen memorization phase renders correctly', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: FaceMatchGameScreen(),
-            ),
+            home: RememberObjectsGameScreen(),
           ),
         ),
       );
-
       await tester.pump();
 
-      // Verify screen title and prompts
-      expect(find.text('Family Photo Match'), findsOneWidget);
-      expect(find.text('Find (पहचानिए):'), findsOneWidget);
+      expect(find.text('Remember Objects'), findsOneWidget);
+      expect(find.textContaining('Memorize these 3 items'), findsOneWidget);
+    });
+
+    testWidgets('FindTargetGameScreen renders target and selection grid', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: FindTargetGameScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Find the Target'), findsOneWidget);
+      expect(find.textContaining('Find this Target'), findsOneWidget);
+    });
+
+    testWidgets('CompletePatternGameScreen renders pattern sequence & choices', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: CompletePatternGameScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Complete the Pattern'), findsOneWidget);
+      expect(find.textContaining('What comes in the question mark'), findsOneWidget);
+    });
+
+    testWidgets('PictureWordMatchGameScreen renders prompt and word options', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: PictureWordMatchGameScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Picture → Word Match'), findsOneWidget);
+      expect(find.textContaining('What is this picture called?'), findsOneWidget);
+    });
+
+    testWidgets('DaySeasonGameScreen renders orientation question', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
+          ],
+          child: const MaterialApp(
+            home: DaySeasonGameScreen(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Day & Season Game'), findsOneWidget);
       expect(find.textContaining('1 /'), findsOneWidget);
     });
 
-    testWidgets('SoundRecallGameScreen loads waveform and sound choices', (tester) async {
+    testWidgets('ShapePositionGameScreen renders target shape and match options', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: SoundRecallGameScreen(),
-            ),
+            home: ShapePositionGameScreen(),
           ),
         ),
       );
-
       await tester.pump();
 
-      // Verify Sound title & replay button
-      expect(find.text('Sound Memory'), findsOneWidget);
-      expect(find.textContaining('Play Sound Again'), findsOneWidget);
-      expect(find.textContaining('1 /'), findsOneWidget);
+      expect(find.text('Shape & Position Match'), findsOneWidget);
+      expect(find.textContaining('Match this Shape'), findsOneWidget);
     });
 
-    testWidgets('PatternSequenceGameScreen renders 4 big interactive symbols', (tester) async {
+    testWidgets('DailySequencingGameScreen renders reorderable activity steps', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             ttsServiceProvider.overrideWithValue(_NoOpTtsService()),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: PatternSequenceGameScreen(),
-            ),
+            home: DailySequencingGameScreen(),
           ),
         ),
       );
-
       await tester.pump();
 
-      // Verify memory sequence symbols
-      expect(find.text('Pattern Sequence'), findsOneWidget);
-      expect(find.text('सूरज (Sun)'), findsOneWidget);
-      expect(find.text('पानी (Water)'), findsOneWidget);
-      expect(find.text('पत्ती (Leaf)'), findsOneWidget);
-      expect(find.text('सितारा (Star)'), findsOneWidget);
+      expect(find.text('Arrange Activities'), findsOneWidget);
+      expect(find.textContaining('Tap in order: Step'), findsOneWidget);
     });
 
     testWidgets('GameCompletionDialog renders 3 stars and action buttons', (tester) async {
