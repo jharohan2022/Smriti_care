@@ -21,6 +21,7 @@ import 'package:smriticare_mobile/features/patient/games/word_recall_game_screen
 import 'package:smriticare_mobile/features/patient/inspiration/daily_inspiration_screen.dart';
 import 'package:smriticare_mobile/features/patient/mood/mood_check_screen.dart';
 import 'package:smriticare_mobile/features/patient/profile/patient_profile_screen.dart';
+import 'package:smriticare_mobile/features/patient/welcome/device_setup_screen.dart';
 import 'package:smriticare_mobile/features/patient/welcome/friendly_greeting_screen.dart';
 import 'package:smriticare_mobile/features/patient/welcome/patient_welcome_screen.dart';
 
@@ -54,6 +55,21 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Smarana 10-Screen Suite & 1-Device 1-Patient Architecture', () {
+    testWidgets('Initial Install: DeviceSetupScreen renders one-time patient activation setup', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createTestWidget(const DeviceSetupScreen()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Smarana Setup'), findsOneWidget);
+      expect(find.textContaining('One-Time Device'), findsOneWidget);
+      expect(find.text('Activate & Lock Device'), findsOneWidget);
+    });
     testWidgets('Screen 1: PatientWelcomeScreen renders Smarana brand & CTA', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;

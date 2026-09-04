@@ -23,13 +23,39 @@ import '../../features/patient/inspiration/daily_inspiration_screen.dart';
 import '../../features/patient/mood/mood_check_screen.dart';
 import '../../features/patient/navigation/patient_bottom_nav_scaffold.dart';
 import '../../features/patient/profile/patient_profile_screen.dart';
+import '../../features/patient/welcome/device_setup_screen.dart';
 import '../../features/patient/welcome/friendly_greeting_screen.dart';
 import '../../features/patient/welcome/patient_welcome_screen.dart';
+import '../services/patient_device_service.dart';
 
 final patientRouterProvider = Provider<GoRouter>((ref) {
+  final patientState = ref.watch(patientDeviceProvider);
+
   return GoRouter(
-    initialLocation: '/welcome',
+    initialLocation: patientState.isDeviceBound ? '/welcome' : '/device-setup',
+    redirect: (context, state) {
+      final isBound = patientState.isDeviceBound;
+      final isSetupLocation = state.uri.toString() == '/device-setup';
+
+      // First time installation: show device activation setup
+      if (!isBound && !isSetupLocation) {
+        return '/device-setup';
+      }
+
+      // After first activation: login option is gone permanently
+      if (isBound && isSetupLocation) {
+        return '/welcome';
+      }
+
+      return null;
+    },
     routes: [
+      // One-time Setup Screen (Only shown upon first install until activated)
+      GoRoute(
+        path: '/device-setup',
+        builder: (context, state) => const DeviceSetupScreen(),
+      ),
+
       // 1. Welcome Screen
       GoRoute(
         path: '/welcome',

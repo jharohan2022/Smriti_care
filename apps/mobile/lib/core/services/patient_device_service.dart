@@ -23,8 +23,8 @@ class PatientProfileData {
     required this.ashaPhone,
     required this.emergencyContact,
     this.primaryLanguage = 'hi',
-    this.careLevel = 'Stage 2 (Moderate)',
-    this.isDeviceBound = true,
+    this.careLevel = 'Moderate Support',
+    this.isDeviceBound = false,
   });
 
   PatientProfileData copyWith({
@@ -57,6 +57,12 @@ class PatientProfileData {
 class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   static const String _ashaPinKey = 'asha_security_pin';
+  static const String _deviceBoundKey = 'is_device_bound_patient';
+  static const String _patientNameKey = 'bound_patient_name';
+  static const String _patientAgeKey = 'bound_patient_age';
+  static const String _patientAshaNameKey = 'bound_patient_asha_name';
+  static const String _patientAshaPhoneKey = 'bound_patient_asha_phone';
+  static const String _patientEmergencyKey = 'bound_patient_emergency';
   static const String _defaultPin = '1234';
 
   PatientDeviceNotifier()
@@ -71,9 +77,61 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
             emergencyContact: '+91 98111 22334 (Rohan - Son)',
             primaryLanguage: 'hi',
             careLevel: 'Moderate Support',
-            isDeviceBound: true,
+            isDeviceBound: false, // Defaults to false on clean install until activated once
           ),
+        ) {
+    _loadDeviceBinding();
+  }
+
+  Future<void> _loadDeviceBinding() async {
+    try {
+      final boundVal = await _storage.read(key: _deviceBoundKey);
+      final isBound = boundVal == 'true';
+      if (isBound) {
+        final name = await _storage.read(key: _patientNameKey) ?? state.name;
+        final age = await _storage.read(key: _patientAgeKey) ?? state.age;
+        final ashaName = await _storage.read(key: _patientAshaNameKey) ?? state.ashaName;
+        final ashaPhone = await _storage.read(key: _patientAshaPhoneKey) ?? state.ashaPhone;
+        final emergency = await _storage.read(key: _patientEmergencyKey) ?? state.emergencyContact;
+
+        state = state.copyWith(
+          name: name,
+          age: age,
+          ashaName: ashaName,
+          ashaPhone: ashaPhone,
+          emergencyContact: emergency,
+          isDeviceBound: true,
         );
+      }
+    } catch (_) {}
+  }
+
+  /// Activate & bind device for a patient (Executed ONLY once after download)
+  Future<void> activateDeviceForPatient({
+    required String name,
+    required String age,
+    required String ashaName,
+    required String ashaPhone,
+    required String emergencyContact,
+    String condition = 'Mild Cognitive Impairment / Early Dementia',
+  }) async {
+    await _storage.write(key: _deviceBoundKey, value: 'true');
+    await _storage.write(key: _patientNameKey, value: name);
+    await _storage.write(key: _patientAgeKey, value: age);
+    await _storage.write(key: _patientAshaNameKey, value: ashaName);
+    await _storage.write(key: _patientAshaPhoneKey, value: ashaPhone);
+    await _storage.write(key: _patientEmergencyKey, value: emergencyContact);
+
+    state = state.copyWith(
+      name: name,
+      age: age,
+      ashaName: ashaName,
+      ashaPhone: ashaPhone,
+      emergencyContact: emergencyContact,
+      condition: condition,
+      isDeviceBound: true,
+    );
+  }
 
   /// Verifies ASHA 4-digit PIN before allowing any management actions
   Future<bool> verifyAshaPin(String pin) async {
@@ -87,44 +145,20 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
     await _storage.write(key: _ashaPinKey, value: newPin);
   }
 
-  /// Update patient information (Only permitted by ASHA)
-  Future<void> updatePatientDetails({
-    String? name,
-    String? age,
-    String? condition,
-    String? ashaName,
-    String? ashaPhone,
-    String? emergencyContact,
-    String? careLevel,
-  }) async {
-    state = state.copyWith(
-      name: name,
-      age: age,
-      condition: condition,
-      ashaName: ashaName,
-      ashaPhone: ashaPhone,
-      emergencyContact: emergencyContact,
-      careLevel: careLevel,
-    );
-  }
-
   /// Reset / Unbind Device — ONLY executable by ASHA worker with verified PIN
   Future<bool> resetDeviceWithAshaPin(String pin) async {
     final valid = await verifyAshaPin(pin);
     if (!valid) return false;
 
-    // Reset to default fresh bound state or clean initial state
-    state = const PatientProfileData(
-      id: 'PAT-NEW',
-      name: 'नया मरीज़ (New Patient)',
-      age: '70',
-      condition: 'Cognitive Support Required',
-      ashaName: 'आशा कार्यकर्ता (ASHA Worker)',
-      ashaPhone: '+91 98765 00000',
-      emergencyContact: '+91 98000 00000',
-      primaryLanguage: 'hi',
-      careLevel: 'Standard Support',
-      isDeviceBound: true,
+    await _storage.delete(key: _deviceBoundKey);
+    await _storage.delete(key: _patientNameKey);
+    await _storage.delete(key: _patientAgeKey);
+    await _storage.delete(key: _patientAshaNameKey);
+    await _storage.delete(key: _patientAshaPhoneKey);
+    await _storage.delete(key: _patientEmergencyKey);
+
+    state = state.copyWith(
+      isDeviceBound: false,
     );
     return true;
   }
