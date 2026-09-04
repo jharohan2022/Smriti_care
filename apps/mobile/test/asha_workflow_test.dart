@@ -234,7 +234,7 @@ void main() {
       expect(find.text('NEEDS ATTENTION'), findsOneWidget);
     });
 
-    testWidgets('Screen 13: AshaDashboardScreen renders Mere Buzurg and filters', (tester) async {
+    testWidgets('Screen 13: AshaDashboardScreen renders Home, Patients, Visits, Alerts, More tabs', (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -245,9 +245,36 @@ void main() {
       await tester.pumpWidget(createAshaTestWidget(const AshaDashboardScreen()));
       await tester.pumpAndSettle();
 
+      // Home View checks
+      expect(find.text('ASHA Sathi Home'), findsOneWidget);
+      expect(find.textContaining('Namaste Sunita Didi!'), findsOneWidget);
+      expect(find.text('Kul Buzurg'), findsOneWidget);
+      expect(find.text('Aaj ki Visits'), findsOneWidget);
+
+      // Tap on Patients Tab (Index 1)
+      await tester.tap(find.text('Patients'));
+      await tester.pumpAndSettle();
       expect(find.text('Mere Buzurg'), findsOneWidget);
       expect(find.textContaining('Ramesh Das'), findsOneWidget);
       expect(find.textContaining('Lakshmi Tai'), findsOneWidget);
+
+      // Tap on Visits Tab (Index 2)
+      await tester.tap(find.text('Visits'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ghar Bhraman (Visits)'), findsOneWidget);
+      expect(find.text('Aaj (3)'), findsOneWidget);
+
+      // Tap on Alerts Tab (Index 3)
+      await tester.tap(find.text('Alerts'));
+      await tester.pumpAndSettle();
+      expect(find.text('Zaroori Alerts'), findsOneWidget);
+      expect(find.text('Critical (2)'), findsOneWidget);
+
+      // Tap on More Tab (Index 4)
+      await tester.tap(find.text('More'));
+      await tester.pumpAndSettle();
+      expect(find.text('Settings & Tools'), findsOneWidget);
+      expect(find.text('Sunita Sharma'), findsOneWidget);
     });
 
     testWidgets('Screen 14: AshaFollowupScreen renders 4 ASHA actions', (tester) async {
