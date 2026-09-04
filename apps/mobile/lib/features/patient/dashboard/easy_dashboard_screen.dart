@@ -32,7 +32,43 @@ class EasyDashboardScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Home', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800)),
+                    Row(
+                      children: [
+                        Container(
+                          height: 44,
+                          width: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE1BEE7), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.06),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Image.asset('assets/images/app_logo.png', fit: BoxFit.contain),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Home', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, height: 1.1)),
+                            Text(
+                              'Smarana (स्मरणा)',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF6A1B9A)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                     Row(
                       children: [
                         PopupMenuButton<String>(

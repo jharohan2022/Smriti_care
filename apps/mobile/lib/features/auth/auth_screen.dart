@@ -176,26 +176,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo & Header
+                  // Official App Logo Badge
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      height: 84,
+                      width: 84,
                       decoration: BoxDecoration(
-                        color: isPatient ? const Color(0xFF00695C) : const Color(0xFF1565C0),
+                        color: Colors.white,
                         shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE1BEE7), width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: (isPatient ? const Color(0xFF00695C) : const Color(0xFF1565C0))
-                                .withOpacity(0.3),
+                            color: Colors.black.withOpacity(0.08),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
                         ],
                       ),
-                      child: Icon(
-                        isPatient ? Icons.favorite_rounded : Icons.health_and_safety_rounded,
-                        size: 40,
-                        color: Colors.white,
+                      child: ClipOval(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.asset(
+                            'assets/images/app_logo.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
                     ),
                   ),

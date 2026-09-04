@@ -64,31 +64,31 @@ class PatientWelcomeScreen extends ConsumerWidget {
 
               const SizedBox(height: 8),
 
-              // Brand Logo: Brain + Leaf with Red & Purple Accents
+              // Brand Logo: Official Smarana Brain + Leaves Logo
               Center(
                 child: Container(
-                  padding: const EdgeInsets.all(12),
+                  height: 84,
+                  width: 84,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3E5F5),
+                    color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE1BEE7), width: 1.5),
+                    border: Border.all(color: const Color(0xFFE1BEE7), width: 2),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6A1B9A).withOpacity(0.08),
-                        blurRadius: 16,
+                        color: const Color(0xFF6A1B9A).withOpacity(0.12),
+                        blurRadius: 18,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.psychology_rounded, size: 38, color: Color(0xFF7B1FA2)),
-                      Transform.translate(
-                        offset: const Offset(-4, -4),
-                        child: const Icon(Icons.eco_rounded, size: 30, color: Color(0xFF2E7D32)),
+                  child: ClipOval(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.contain,
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
