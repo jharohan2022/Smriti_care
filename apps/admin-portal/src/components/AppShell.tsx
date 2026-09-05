@@ -32,7 +32,7 @@ export function AppShell() {
         <div>
           <div className="mb-6 px-2">
             <div className="text-lg font-bold text-ink flex items-center gap-2">
-              <span className="text-xl">🛡️</span> SmritiCare
+              <span className="text-xl">🛡️</span> Smarana
             </div>
             <div className="text-xs text-ink-muted">System Administration Console</div>
           </div>

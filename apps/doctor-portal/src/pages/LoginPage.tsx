@@ -53,7 +53,7 @@ export function LoginPage() {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-2xl text-white shadow-md">
             🩺
           </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">SmritiCare Clinician</h1>
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">Smarana Clinician</h1>
           <p className="mt-1 text-sm text-ink-secondary">Neurologist & Doctor Clinical Portal</p>
         </div>
 

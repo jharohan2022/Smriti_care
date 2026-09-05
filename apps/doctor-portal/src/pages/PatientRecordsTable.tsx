@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { QueryBoundary } from "../components/QueryBoundary";
 import { useOnline } from "../components/OfflineBanner";
 import { apiFetch, USE_MOCKS } from "../lib/api";
@@ -26,6 +27,7 @@ function toCsv(rows: PatientRecord[]): string {
 }
 
 export function PatientRecordsTable() {
+  const navigate = useNavigate();
   const query = useQuery({ queryKey: qk.records, queryFn: fetchPatientRecords });
   const online = useOnline();
   const [exporting, setExporting] = useState(false);
@@ -45,7 +47,7 @@ export function PatientRecordsTable() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `smriticare-records-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `smarana-records-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -100,8 +102,12 @@ export function PatientRecordsTable() {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.patientId} className="border-b border-hairline last:border-0">
-                    <td className="px-4 py-3 font-medium text-ink">{r.name}</td>
+                  <tr 
+                    key={r.patientId} 
+                    onClick={() => navigate(`/records/${r.patientId}`)}
+                    className="border-b border-hairline last:border-0 cursor-pointer hover:bg-white/5 transition-colors group"
+                  >
+                    <td className="px-4 py-3 font-medium text-[var(--series-1)] group-hover:underline">{r.name}</td>
                     <td className="px-4 py-3 tabular-nums text-ink-secondary">{r.age}</td>
                     <td className="px-4 py-3 text-ink-secondary">{r.region}</td>
                     <td className="px-4 py-3 text-ink-secondary">{r.diagnosis}</td>

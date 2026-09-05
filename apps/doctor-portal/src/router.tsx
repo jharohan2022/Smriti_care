@@ -2,9 +2,11 @@ import { createBrowserRouter, isRouteErrorResponse, Navigate, useRouteError } fr
 import { AppShell } from "./components/AppShell";
 import { ClinicalDashboard } from "./pages/ClinicalDashboard";
 import { PatientRecordsTable } from "./pages/PatientRecordsTable";
-import { TelemetryAnalyticsChart } from "./pages/TelemetryAnalyticsChart";
 import { LoginPage } from "./pages/LoginPage";
 import { SignupPage } from "./pages/SignupPage";
+import { PatientReportPage } from "./pages/PatientReportPage";
+import { AppointmentsPage } from "./pages/AppointmentsPage";
+import { MessagesPage } from "./pages/MessagesPage";
 import { useAuth } from "./lib/authContext";
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -52,8 +54,10 @@ export const router = createBrowserRouter([
     errorElement: <RouteError />,
     children: [
       { path: "/", element: <ClinicalDashboard /> },
-      { path: "/analytics", element: <TelemetryAnalyticsChart /> },
       { path: "/records", element: <PatientRecordsTable /> },
+      { path: "/records/:patientId", element: <PatientReportPage /> },
+      { path: "/appointments", element: <AppointmentsPage /> },
+      { path: "/messages", element: <MessagesPage /> },
     ],
   },
 ]);

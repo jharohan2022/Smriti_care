@@ -103,10 +103,10 @@ function AnomalyTable({ patients }: { patients: AnomalyPatient[] }) {
               </td>
               <td className="px-4 py-3 text-right">
                 <Link
-                  to={`/analytics?patient=${p.patientId}`}
+                  to={`/records/${p.patientId}`}
                   className="text-sm font-medium text-[var(--series-1)] hover:underline"
                 >
-                  View trend →
+                  View profile →
                 </Link>
               </td>
             </tr>

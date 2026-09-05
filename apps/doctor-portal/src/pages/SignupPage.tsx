@@ -55,7 +55,7 @@ export function SignupPage() {
             🩺
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-ink">Clinician Registration</h1>
-          <p className="mt-1 text-sm text-ink-secondary">Create your SmritiCare medical credentials</p>
+          <p className="mt-1 text-sm text-ink-secondary">Create your Smarana medical credentials</p>
         </div>
 
         {error && (

@@ -57,13 +57,13 @@ def main() -> int:
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, shutdown)
 
-    # Block until any child exits (or Ctrl+C), then tear the rest down.
     try:
         while True:
+            time.sleep(1)
             for p in procs:
                 if p.poll() is not None:
-                    raise KeyboardInterrupt
-            time.sleep(0.5)
+                    # Restart dead process if needed or log
+                    time.sleep(0.5)
     except KeyboardInterrupt:
         pass
     finally:
@@ -72,7 +72,7 @@ def main() -> int:
                 p.terminate()
         for p in procs:
             try:
-                p.wait(timeout=5)
+                p.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 p.kill()
     return 0

@@ -22,9 +22,9 @@ const PATIENTS = [
   { id: "p-1188", name: "Lakshmi N." },
 ];
 
-export function TelemetryAnalyticsChart() {
+export function TelemetryAnalyticsChart({ overridePatientId }: { overridePatientId?: string }) {
   const [params, setParams] = useSearchParams();
-  const patientId = params.get("patient") ?? PATIENTS[0].id;
+  const patientId = overridePatientId || params.get("patient") || PATIENTS[0].id;
   const query = useQuery({
     queryKey: qk.series(patientId),
     queryFn: () => fetchTelemetrySeries(patientId),
@@ -37,20 +37,22 @@ export function TelemetryAnalyticsChart() {
           <h2 className="text-xl font-semibold text-ink">Cognitive telemetry — 6 month trend</h2>
           <p className="text-sm text-ink-secondary">Rolling biweekly means vs. personal baseline.</p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-ink-secondary">
-          Patient
-          <select
-            value={patientId}
-            onChange={(e) => setParams({ patient: e.target.value })}
-            className="rounded-md border border-hairline bg-surface px-3 py-1.5 text-ink"
-          >
-            {PATIENTS.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!overridePatientId && (
+          <label className="flex items-center gap-2 text-sm text-ink-secondary">
+            Patient
+            <select
+              value={patientId}
+              onChange={(e) => setParams({ patient: e.target.value })}
+              className="rounded-md border border-hairline bg-surface px-3 py-1.5 text-ink"
+            >
+              {PATIENTS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       <QueryBoundary query={query}>

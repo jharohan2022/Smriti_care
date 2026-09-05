@@ -142,21 +142,18 @@ def login(req: LoginRequest) -> AuthResponse:
     user_key = req.username.strip().lower()
     user = _USERS.get(user_key)
     
-    # If it's a patient or demo login, auto-register if not existing
+    # Auto-register new users on first login for smooth demo / developer access
     if not user:
-        if req.role == "patient" or not req.password:
-            user = {
-                "password": req.password,
-                "name": req.username,
-                "role": req.role,
-                "region": "Local",
-                "language": req.language,
-            }
-            _USERS[user_key] = user
-        else:
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+        user = {
+            "password": req.password,
+            "name": req.username.split("@")[0].title() if "@" in req.username else req.username.title(),
+            "role": req.role,
+            "region": "Central Health HQ" if req.role == "admin" else ("AIIMS New Delhi" if req.role == "doctor" else "Local"),
+            "language": req.language,
+        }
+        _USERS[user_key] = user
     elif req.password and user.get("password") and user["password"] != req.password:
-        raise HTTPException(status_code=401, detail="Invalid password")
+        raise HTTPException(status_code=401, detail="Invalid password for existing user")
 
     token = f"jwt-token-{secrets.token_hex(16)}"
     return AuthResponse(
