@@ -28,7 +28,11 @@ import '../../features/patient/games/day_season_game_screen.dart';
 import '../../features/patient/games/face_match_game_screen.dart';
 import '../../features/patient/games/find_target_game_screen.dart';
 import '../../features/patient/games/games_hub_screen.dart';
+import '../../features/patient/games/memory_box_game_screen.dart';
 import '../../features/patient/games/memory_cards_game_screen.dart';
+import '../../features/patient/games/memory_tree_game_screen.dart';
+import '../../features/patient/games/mera_bazaar_game_screen.dart';
+import '../../features/patient/games/meri_duniya_game_screen.dart';
 import '../../features/patient/games/pattern_sequence_game_screen.dart';
 import '../../features/patient/games/picture_word_match_game_screen.dart';
 import '../../features/patient/games/remember_objects_game_screen.dart';
@@ -148,6 +152,24 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/end-screen',
         builder: (context, state) => const EndCelebrationScreen(),
+      ),
+
+      // Dedicated 4 Cognitive Games
+      GoRoute(
+        path: '/game/memory-box',
+        builder: (context, state) => const MemoryBoxGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/meri-duniya',
+        builder: (context, state) => const MeriDuniyaGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/memory-tree',
+        builder: (context, state) => const MemoryTreeGameScreen(),
+      ),
+      GoRoute(
+        path: '/game/mera-bazaar',
+        builder: (context, state) => const MeraBazaarGameScreen(),
       ),
 
       // Games
