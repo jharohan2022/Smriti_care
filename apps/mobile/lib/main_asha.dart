@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 import 'bootstrap.dart';
 import 'core/config/flavor_config.dart';
 import 'main_patient.dart';

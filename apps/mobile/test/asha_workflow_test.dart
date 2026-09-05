@@ -27,9 +27,6 @@ class FakeTtsService implements TtsService {
 
   @override
   Future<void> stop() async {}
-
-  @override
-  void dispose() {}
 }
 
 Widget createAshaTestWidget(Widget child) {

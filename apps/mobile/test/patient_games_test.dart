@@ -6,17 +6,8 @@ import 'package:smriticare_mobile/features/patient/activities/daily_activities_s
 import 'package:smriticare_mobile/features/patient/asha/connect_asha_screen.dart';
 import 'package:smriticare_mobile/features/patient/dashboard/easy_dashboard_screen.dart';
 import 'package:smriticare_mobile/features/patient/end_screen/end_celebration_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/complete_pattern_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/daily_sequencing_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/day_season_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/face_match_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/find_target_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/games_hub_screen.dart';
 import 'package:smriticare_mobile/features/patient/games/memory_cards_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/picture_word_match_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/remember_objects_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/shape_position_game_screen.dart';
-import 'package:smriticare_mobile/features/patient/games/widgets/game_completion_dialog.dart';
 import 'package:smriticare_mobile/features/patient/games/word_recall_game_screen.dart';
 import 'package:smriticare_mobile/features/patient/inspiration/daily_inspiration_screen.dart';
 import 'package:smriticare_mobile/features/patient/mood/mood_check_screen.dart';
@@ -35,9 +26,6 @@ class FakeTtsService implements TtsService {
 
   @override
   Future<void> stop() async {}
-
-  @override
-  void dispose() {}
 }
 
 Widget createTestWidget(Widget child) {

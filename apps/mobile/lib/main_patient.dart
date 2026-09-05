@@ -7,8 +7,6 @@ import 'core/config/flavor_config.dart';
 import 'core/router/asha_router.dart';
 import 'core/router/patient_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/auth_screen.dart';
-import 'features/patient/welcome/patient_welcome_screen.dart';
 
 /// SmritiCare unified mobile entrypoint with dynamic role switching:
 ///   flutter run -d <device> -t lib/main_patient.dart
