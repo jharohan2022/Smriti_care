@@ -11,6 +11,7 @@ import '../../features/asha/assessment/asha_trend_analysis_screen.dart';
 import '../../features/asha/auth/asha_login_screen.dart';
 import '../../features/asha/dashboard/asha_dashboard_screen.dart';
 import '../../features/asha/followup/asha_followup_screen.dart';
+import '../../features/asha/onboarding/onboard_family_members_screen.dart';
 import '../../features/asha/onboarding/onboard_step1_screen.dart';
 import '../../features/asha/onboarding/onboard_step2_screen.dart';
 import '../../features/asha/onboarding/onboard_step3_screen.dart';
@@ -66,7 +67,7 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
 
       // After first activation: login option is gone permanently
       if (isBound && isSetupLocation) {
-        return '/welcome';
+        return '/greeting';
       }
 
       return null;
@@ -84,9 +85,10 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DeviceSetupScreen(),
       ),
 
-      // 1. Welcome Screen
+      // 1. Welcome Screen (Redirected to Greeting Screen)
       GoRoute(
         path: '/welcome',
+        redirect: (context, state) => '/greeting',
         builder: (context, state) => const PatientWelcomeScreen(),
       ),
 
@@ -222,6 +224,12 @@ final patientRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/asha/onboard/step2',
         builder: (context, state) => OnboardStep2Screen(
+          prevData: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/asha/onboard/step3-family',
+        builder: (context, state) => OnboardFamilyMembersScreen(
           prevData: state.extra as Map<String, dynamic>?,
         ),
       ),

@@ -217,10 +217,20 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 34,
-                      backgroundColor: _currentTarget.avatarColor.withOpacity(0.15),
-                      child: Icon(_currentTarget.icon, size: 40, color: _currentTarget.avatarColor),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: _currentTarget.photoPath != null
+                          ? Image.asset(
+                              _currentTarget.photoPath!,
+                              width: 68,
+                              height: 68,
+                              fit: BoxFit.cover,
+                            )
+                          : CircleAvatar(
+                              radius: 34,
+                              backgroundColor: _currentTarget.avatarColor.withOpacity(0.15),
+                              child: Icon(_currentTarget.icon, size: 40, color: _currentTarget.avatarColor),
+                            ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -312,13 +322,23 @@ class _FaceMatchGameScreenState extends ConsumerState<FaceMatchGameScreen> {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: option.avatarColor.withOpacity(0.14),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(option.icon, size: 34, color: option.avatarColor),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: option.photoPath != null
+                                  ? Image.asset(
+                                      option.photoPath!,
+                                      width: 56,
+                                      height: 56,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: option.avatarColor.withOpacity(0.14),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(option.icon, size: 34, color: option.avatarColor),
+                                    ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(

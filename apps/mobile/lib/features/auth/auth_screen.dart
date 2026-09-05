@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/widgets/neon_highlight_text.dart';
+import '../../core/services/speech_mode_provider.dart';
 import '../../core/auth/auth_state_provider.dart';
 import '../../core/config/flavor_config.dart';
 import '../../core/services/tts_service.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/services/patient_device_service.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -28,8 +30,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _medicalNotesController = TextEditingController();
 
   String _patientGender = 'Male (पुरुष)';
-  String _selectedLanguage = 'hi';
   String _cognitiveStage = 'Mild Memory Loss (प्रारंभिक स्मृति ह्रास)';
+  String _selectedLanguage = 'hi';
+  String _selectedPhotoPath = 'assets/images/family/grandfather.jpg';
 
   // ASHA Controllers
   final _ashaIdController = TextEditingController(text: 'ASHA-8841');
@@ -102,6 +105,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               patientId: _patientIdController.text.trim().isNotEmpty ? _patientIdController.text.trim() : null,
               language: _selectedLanguage,
               medicalNotes: _cognitiveStage,
+              profilePhotoPath: _selectedPhotoPath,
+            );
+
+        await ref.read(patientDeviceProvider.notifier).activateDeviceForPatient(
+              name: name,
+              age: age.toString(),
+              ashaName: 'Sunita Didi',
+              ashaPhone: '+91 98765 43210',
+              emergencyContact: '$caregiverPhone ($caregiverName)',
+              condition: _cognitiveStage,
+              profilePhotoPath: _selectedPhotoPath,
             );
 
         ref.read(ttsServiceProvider).speak(
@@ -116,6 +130,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ? _patientVillageController.text.trim()
                   : 'Rampur Village',
               language: _selectedLanguage,
+              profilePhotoPath: _selectedPhotoPath,
+            );
+
+        await ref.read(patientDeviceProvider.notifier).activateDeviceForPatient(
+              name: name,
+              age: '68',
+              ashaName: 'Sunita Didi',
+              ashaPhone: '+91 98765 43210',
+              emergencyContact: '9876543210 (Caregiver)',
+              condition: 'Mild Memory Loss',
+              profilePhotoPath: _selectedPhotoPath,
             );
 
         ref.read(ttsServiceProvider).speak(
@@ -205,26 +230,50 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Text(
-                    'Smarana (स्मरणा) — SmritiCare',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
+                  NeonHighlightText(
+                    text: 'Smarana (स्मरणा) — SmritiCare',
+                    textStyle: TextStyle(
                       fontSize: isPatient ? 28 : 24,
                       fontWeight: FontWeight.w900,
                       color: isPatient ? const Color(0xFF311B92) : const Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Har Yaad, Hamare Saath • Cognitive Care Portal',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
+                  NeonHighlightText(
+                    text: 'Har Yaad, Hamare Saath • Cognitive Care Portal',
+                    textStyle: TextStyle(
                       fontSize: 14,
                       color: isPatient ? const Color(0xFFC2185B) : Colors.grey.shade700,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // Speech Mode toggle
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final speechEnabled = ref.watch(speechModeProvider);
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Speak Mode',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          Switch(
+                            value: speechEnabled,
+                            onChanged: (val) {
+                              ref.read(speechModeProvider.notifier).state = val;
+                              // announce change via TTS
+                              ref.read(ttsServiceProvider).speak(
+                                val ? 'Speak mode enabled' : 'Speak mode disabled',
+                                langCode: _selectedLanguage,
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
 
                   // Role Selection Toggle
                   Container(
@@ -423,6 +472,71 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ],
         ),
         const Divider(height: 20),
+
+        // Select DP Avatar
+        Center(
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 36,
+                    backgroundImage: AssetImage(_selectedPhotoPath),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00695C),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text('Select Profile DP Photo (प्रोफाइल फोटो चुनिए)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF00695C))),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    'assets/images/family/grandfather.jpg',
+                    'assets/images/family/father.jpg',
+                    'assets/images/family/mother.jpg',
+                    'assets/images/family/son.jpg',
+                    'assets/images/family/daughter.jpg',
+                  ].map((path) {
+                    final isSel = _selectedPhotoPath == path;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedPhotoPath = path),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSel ? const Color(0xFF00695C) : Colors.transparent,
+                            width: 2.5,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 18,
+                          backgroundImage: AssetImage(path),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
 
         // Full Name Field
         TextField(

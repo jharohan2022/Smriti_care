@@ -16,6 +16,7 @@ class MobileAuthUser {
     this.caregiverName,
     this.caregiverPhone,
     this.medicalNotes,
+    this.profilePhotoPath,
   });
 
   final String userId;
@@ -28,6 +29,7 @@ class MobileAuthUser {
   final String? caregiverName;
   final String? caregiverPhone;
   final String? medicalNotes;
+  final String? profilePhotoPath;
 
   Map<String, dynamic> toJson() => {
         'userId': userId,
@@ -40,6 +42,7 @@ class MobileAuthUser {
         if (caregiverName != null) 'caregiverName': caregiverName,
         if (caregiverPhone != null) 'caregiverPhone': caregiverPhone,
         if (medicalNotes != null) 'medicalNotes': medicalNotes,
+        if (profilePhotoPath != null) 'profilePhotoPath': profilePhotoPath,
       };
 
   factory MobileAuthUser.fromJson(Map<String, dynamic> json) => MobileAuthUser(
@@ -53,6 +56,7 @@ class MobileAuthUser {
         caregiverName: json['caregiverName'] as String?,
         caregiverPhone: json['caregiverPhone'] as String?,
         medicalNotes: json['medicalNotes'] as String?,
+        profilePhotoPath: json['profilePhotoPath'] as String?,
       );
 }
 
@@ -121,6 +125,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
     String? patientId,
     String language = 'hi',
     String? medicalNotes,
+    String? profilePhotoPath,
   }) async {
     final generatedId = patientId != null && patientId.trim().isNotEmpty
         ? patientId.trim()
@@ -137,6 +142,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
       caregiverName: caregiverName,
       caregiverPhone: caregiverPhone,
       medicalNotes: medicalNotes,
+      profilePhotoPath: profilePhotoPath,
     );
 
     _applyRoleConfig(AppFlavor.patient);
@@ -152,6 +158,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
     String? patientId,
     String village = 'Rampur Village',
     String language = 'hi',
+    String? profilePhotoPath,
   }) async {
     final id = patientId != null && patientId.trim().isNotEmpty
         ? patientId.trim()
@@ -163,6 +170,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
       role: AppFlavor.patient,
       region: village,
       language: language,
+      profilePhotoPath: profilePhotoPath,
     );
 
     _applyRoleConfig(AppFlavor.patient);
@@ -177,6 +185,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
     required String ashaId,
     required String name,
     String jurisdiction = 'Rampur Sub-Center',
+    String? profilePhotoPath,
   }) async {
     final user = MobileAuthUser(
       userId: ashaId,
@@ -184,10 +193,30 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
       role: AppFlavor.asha,
       region: jurisdiction,
       language: 'hi',
+      profilePhotoPath: profilePhotoPath,
     );
     _applyRoleConfig(AppFlavor.asha);
     await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
     state = state.copyWith(user: user);
+  }
+
+  Future<void> updateProfilePhoto(String photoPath) async {
+    if (state.user == null) return;
+    final updated = MobileAuthUser(
+      userId: state.user!.userId,
+      name: state.user!.name,
+      role: state.user!.role,
+      region: state.user!.region,
+      language: state.user!.language,
+      age: state.user!.age,
+      gender: state.user!.gender,
+      caregiverName: state.user!.caregiverName,
+      caregiverPhone: state.user!.caregiverPhone,
+      medicalNotes: state.user!.medicalNotes,
+      profilePhotoPath: photoPath,
+    );
+    await _storage.write(key: _userKey, value: jsonEncode(updated.toJson()));
+    state = state.copyWith(user: updated);
   }
 
   Future<void> switchRole(AppFlavor newRole) async {
@@ -203,6 +232,7 @@ class AuthNotifier extends StateNotifier<MobileAuthState> {
       caregiverName: state.user!.caregiverName,
       caregiverPhone: state.user!.caregiverPhone,
       medicalNotes: state.user!.medicalNotes,
+      profilePhotoPath: state.user!.profilePhotoPath,
     );
     _applyRoleConfig(newRole);
     await _storage.write(key: _userKey, value: jsonEncode(updated.toJson()));

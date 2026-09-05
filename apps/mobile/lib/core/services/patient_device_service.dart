@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -13,6 +12,7 @@ class PatientProfileData {
   final String primaryLanguage;
   final String careLevel;
   final bool isDeviceBound;
+  final String? profilePhotoPath;
 
   const PatientProfileData({
     required this.id,
@@ -25,6 +25,7 @@ class PatientProfileData {
     this.primaryLanguage = 'hi',
     this.careLevel = 'Moderate Support',
     this.isDeviceBound = false,
+    this.profilePhotoPath,
   });
 
   PatientProfileData copyWith({
@@ -38,6 +39,7 @@ class PatientProfileData {
     String? primaryLanguage,
     String? careLevel,
     bool? isDeviceBound,
+    String? profilePhotoPath,
   }) {
     return PatientProfileData(
       id: id ?? this.id,
@@ -50,6 +52,7 @@ class PatientProfileData {
       primaryLanguage: primaryLanguage ?? this.primaryLanguage,
       careLevel: careLevel ?? this.careLevel,
       isDeviceBound: isDeviceBound ?? this.isDeviceBound,
+      profilePhotoPath: profilePhotoPath ?? this.profilePhotoPath,
     );
   }
 }
@@ -63,6 +66,7 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
   static const String _patientAshaNameKey = 'bound_patient_asha_name';
   static const String _patientAshaPhoneKey = 'bound_patient_asha_phone';
   static const String _patientEmergencyKey = 'bound_patient_emergency';
+  static const String _patientPhotoKey = 'bound_patient_photo';
   static const String _defaultPin = '1234';
 
   PatientDeviceNotifier()
@@ -93,6 +97,7 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
         final ashaName = await _storage.read(key: _patientAshaNameKey) ?? state.ashaName;
         final ashaPhone = await _storage.read(key: _patientAshaPhoneKey) ?? state.ashaPhone;
         final emergency = await _storage.read(key: _patientEmergencyKey) ?? state.emergencyContact;
+        final photo = await _storage.read(key: _patientPhotoKey);
 
         state = state.copyWith(
           name: name,
@@ -100,6 +105,7 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
           ashaName: ashaName,
           ashaPhone: ashaPhone,
           emergencyContact: emergency,
+          profilePhotoPath: photo,
           isDeviceBound: true,
         );
       }
@@ -114,6 +120,7 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
     required String ashaPhone,
     required String emergencyContact,
     String condition = 'Mild Cognitive Impairment / Early Dementia',
+    String? profilePhotoPath,
   }) async {
     await _storage.write(key: _deviceBoundKey, value: 'true');
     await _storage.write(key: _patientNameKey, value: name);
@@ -121,6 +128,9 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
     await _storage.write(key: _patientAshaNameKey, value: ashaName);
     await _storage.write(key: _patientAshaPhoneKey, value: ashaPhone);
     await _storage.write(key: _patientEmergencyKey, value: emergencyContact);
+    if (profilePhotoPath != null) {
+      await _storage.write(key: _patientPhotoKey, value: profilePhotoPath);
+    }
 
     state = state.copyWith(
       name: name,
@@ -129,8 +139,14 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
       ashaPhone: ashaPhone,
       emergencyContact: emergencyContact,
       condition: condition,
+      profilePhotoPath: profilePhotoPath,
       isDeviceBound: true,
     );
+  }
+
+  Future<void> updateProfilePhoto(String photoPath) async {
+    await _storage.write(key: _patientPhotoKey, value: photoPath);
+    state = state.copyWith(profilePhotoPath: photoPath);
   }
 
   /// Verifies ASHA 4-digit PIN before allowing any management actions
@@ -156,6 +172,7 @@ class PatientDeviceNotifier extends StateNotifier<PatientProfileData> {
     await _storage.delete(key: _patientAshaNameKey);
     await _storage.delete(key: _patientAshaPhoneKey);
     await _storage.delete(key: _patientEmergencyKey);
+    await _storage.delete(key: _patientPhotoKey);
 
     state = state.copyWith(
       isDeviceBound: false,

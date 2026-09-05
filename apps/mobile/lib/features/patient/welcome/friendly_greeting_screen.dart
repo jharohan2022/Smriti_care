@@ -77,7 +77,7 @@ class _FriendlyGreetingScreenState extends ConsumerState<FriendlyGreetingScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: textDark, size: 28),
-          onPressed: () => context.go('/welcome'),
+          onPressed: () => context.go('/home'),
         ),
         actions: [
           IconButton(

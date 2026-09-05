@@ -18,6 +18,7 @@ class SoundItem {
     required this.soundCue,
     required this.icon,
     required this.color,
+    required this.imagePath,
   });
 
   final String id;
@@ -26,6 +27,7 @@ class SoundItem {
   final String soundCue;
   final IconData icon;
   final Color color;
+  final String imagePath;
 }
 
 class SoundRecallGameScreen extends ConsumerStatefulWidget {
@@ -45,6 +47,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Ting Ting... Dong! (मंदिर की पवित्र घंटी)',
       icon: Icons.notifications_active_rounded,
       color: Color(0xFFF57F17),
+      imagePath: 'assets/images/targets/bell.jpg',
     ),
     SoundItem(
       id: 'rain',
@@ -53,6 +56,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Tip Tip Barsa Paani... Rim Jhim (बारिश की आवाज़)',
       icon: Icons.water_drop_rounded,
       color: Color(0xFF0288D1),
+      imagePath: 'assets/images/targets/leaf.jpg',
     ),
     SoundItem(
       id: 'birds',
@@ -61,6 +65,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Chee Chee... Chuhakna (सुबह चिड़ियों का चहकना)',
       icon: Icons.flutter_dash_rounded,
       color: Color(0xFF43A047),
+      imagePath: 'assets/images/targets/sun.jpg',
     ),
     SoundItem(
       id: 'clock',
@@ -69,6 +74,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Tik Tik Tik Tik (घड़ी की सुई की आवाज़)',
       icon: Icons.access_time_filled_rounded,
       color: Color(0xFF5E35B1),
+      imagePath: 'assets/images/targets/eye.jpg',
     ),
     SoundItem(
       id: 'flute',
@@ -77,6 +83,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Madhur Baansuri ki Dhun (सुरीली बांसुरी)',
       icon: Icons.music_note_rounded,
       color: Color(0xFFD81B60),
+      imagePath: 'assets/images/targets/heart.jpg',
     ),
     SoundItem(
       id: 'tractor',
@@ -85,6 +92,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       soundCue: 'Dug Dug Dug... Khet ka Tractor (ट्रैक्टर इंजन)',
       icon: Icons.agriculture_rounded,
       color: Color(0xFFE65100),
+      imagePath: 'assets/images/targets/key.jpg',
     ),
   ];
 
@@ -206,7 +214,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
       gameId: 'sound-recall',
       reactionMs: reactionMs,
       spatialErrorPx: isCorrect ? 0.0 : 1.0,
-      patternErrors: isCorrect ? 0 : 1,
+      patternErrors: _repeatCount,
       capturedAt: DateTime.now(),
     );
 
@@ -241,8 +249,8 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
           onPressed: () => context.go('/games'),
         ),
         title: const Text(
-          'Sound Memory',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF00695C)),
+          'Awaz Pehchaniye (Sound Memory)',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF00695C)),
         ),
         actions: [
           Container(
@@ -265,9 +273,9 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Sound Player Card
+              // Sound Player Card with animated waves & real sound button
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
@@ -305,10 +313,10 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'आवाज़ सुनिए (Listen to Sound):',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+                      'आवाज़ सुनिए (Listen to Real Sound):',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     ElevatedButton.icon(
                       onPressed: () {
                         _repeatCount++;
@@ -316,13 +324,13 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
                       },
                       icon: const Icon(Icons.volume_up_rounded, size: 30),
                       label: const Text(
-                        'Play Sound Again (फिर से सुनें)',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        'Play Real Sound Again (आवाज़ पुनः सुनें)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0288D1),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 2,
                       ),
@@ -335,12 +343,12 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
               const Center(
                 child: Text(
                   'What made this sound? (यह किसकी आवाज़ है?)',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
                 ),
               ),
               const SizedBox(height: 14),
 
-              // Options
+              // Photographic Options List
               Expanded(
                 child: ListView.separated(
                   physics: const BouncingScrollPhysics(),
@@ -369,7 +377,7 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
                       borderRadius: BorderRadius.circular(22),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           color: bgColor,
                           borderRadius: BorderRadius.circular(22),
@@ -387,23 +395,25 @@ class _SoundRecallGameScreenState extends ConsumerState<SoundRecallGameScreen>
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                color: option.color.withOpacity(0.14),
-                                shape: BoxShape.circle,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                option.imagePath,
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
                               ),
-                              child: Icon(option.icon, size: 36, color: option.color),
                             ),
-                            const SizedBox(width: 18),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     option.nameHi,
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     option.nameEn,
                                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey.shade600),

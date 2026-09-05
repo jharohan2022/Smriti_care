@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/services/patient_device_service.dart';
 import '../../../core/services/tts_service.dart';
+import '../../../core/auth/auth_state_provider.dart';
 
 class DeviceSetupScreen extends ConsumerStatefulWidget {
   const DeviceSetupScreen({super.key});
@@ -19,6 +20,7 @@ class _DeviceSetupScreenState extends ConsumerState<DeviceSetupScreen> {
   final _ashaPhoneController = TextEditingController(text: '+91 98765 43210');
   final _emergencyController = TextEditingController(text: '+91 98111 22334 (Rohan - Son)');
 
+  String _photoPath = 'assets/images/family/grandfather.jpg';
   bool _isLoading = false;
 
   @override
@@ -64,7 +66,10 @@ class _DeviceSetupScreenState extends ConsumerState<DeviceSetupScreen> {
           emergencyContact: _emergencyController.text.trim().isNotEmpty
               ? _emergencyController.text.trim()
               : '+91 98111 22334',
+          profilePhotoPath: _photoPath,
         );
+
+    ref.read(authStateProvider.notifier).updateProfilePhoto(_photoPath);
 
     setState(() => _isLoading = false);
 

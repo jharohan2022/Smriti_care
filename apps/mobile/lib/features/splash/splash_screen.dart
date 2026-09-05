@@ -57,7 +57,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!patientState.isDeviceBound) {
       context.go('/device-setup');
     } else {
-      context.go('/welcome');
+      context.go('/greeting');
     }
   }
 

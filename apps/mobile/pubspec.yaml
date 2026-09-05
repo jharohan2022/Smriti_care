@@ -46,6 +46,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/targets/
+    - assets/images/family/
     - assets/audio/            # pre-cached narration for zero-connectivity first-run
 
 # Build flavors are configured in android/app/build.gradle and ios/ (Xcode schemes):

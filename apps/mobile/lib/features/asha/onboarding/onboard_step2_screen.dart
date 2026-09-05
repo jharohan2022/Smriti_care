@@ -28,7 +28,7 @@ class _OnboardStep2ScreenState extends State<OnboardStep2Screen> {
       'language': _suggestedLanguage,
     };
 
-    context.push('/asha/onboard/step3', extra: mergedData);
+    context.push('/asha/onboard/step3-family', extra: mergedData);
   }
 
   @override

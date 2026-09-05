@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,10 +25,17 @@ class GameHubItem {
   final String badge;
 }
 
-class GamesHubScreen extends ConsumerWidget {
+/// Games Hub displaying cognitive exercises.
+/// The order of games is dynamically randomized on every visit to keep sessions fresh.
+class GamesHubScreen extends ConsumerStatefulWidget {
   const GamesHubScreen({super.key});
 
-  static const List<GameHubItem> _games = [
+  @override
+  ConsumerState<GamesHubScreen> createState() => _GamesHubScreenState();
+}
+
+class _GamesHubScreenState extends ConsumerState<GamesHubScreen> {
+  static const List<GameHubItem> _catalog = [
     GameHubItem(
       titleHi: 'वस्तुओं को याद रखें (Remember Objects)',
       titleEn: 'Remember the Objects',
@@ -45,6 +53,24 @@ class GamesHubScreen extends ConsumerWidget {
       icon: Icons.track_changes_rounded,
       color: Color(0xFFD81B60),
       badge: 'Attention (ध्यान)',
+    ),
+    GameHubItem(
+      titleHi: 'आवाज़ की पहचान (Sound Memory)',
+      titleEn: 'Audio & Sound Recall',
+      description: 'Listen to real-life bells, rain, birds & sounds',
+      route: '/game/sound-recall',
+      icon: Icons.graphic_eq_rounded,
+      color: Color(0xFF0288D1),
+      badge: 'Auditory Recall (आवाज़ पहचान)',
+    ),
+    GameHubItem(
+      titleHi: 'परिवार की पहचान (Family Match)',
+      titleEn: 'Family & Photo Match',
+      description: 'Match familiar faces of your family and helpers',
+      route: '/game/face-match',
+      icon: Icons.family_restroom_rounded,
+      color: Color(0xFFE91E63),
+      badge: 'Faces & Photos (अपनों की पहचान)',
     ),
     GameHubItem(
       titleHi: 'पैटर्न पूरा करें (Complete Pattern)',
@@ -92,24 +118,6 @@ class GamesHubScreen extends ConsumerWidget {
       badge: 'Executive (क्रमबद्धता)',
     ),
     GameHubItem(
-      titleHi: 'परिवार की पहचान (Family Match)',
-      titleEn: 'Family & Photo Match',
-      description: 'Match familiar faces of your family and helpers',
-      route: '/game/face-match',
-      icon: Icons.family_restroom_rounded,
-      color: Color(0xFFE91E63),
-      badge: 'Faces & Photos',
-    ),
-    GameHubItem(
-      titleHi: 'आवाज़ की पहचान (Sound Memory)',
-      titleEn: 'Audio & Sound Recall',
-      description: 'Listen to familiar bells, rain, birds & sounds',
-      route: '/game/sound-recall',
-      icon: Icons.graphic_eq_rounded,
-      color: Color(0xFF0288D1),
-      badge: 'Auditory Recall',
-    ),
-    GameHubItem(
       titleHi: 'रंग और अनुक्रम (Pattern Sequence)',
       titleEn: 'Color Sequence Memory',
       description: 'Follow and repeat the shining color patterns',
@@ -120,10 +128,19 @@ class GamesHubScreen extends ConsumerWidget {
     ),
   ];
 
+  late List<GameHubItem> _displayedGames;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    // Shuffle games catalog every single time the user opens the hub
+    _displayedGames = List.of(_catalog)..shuffle(math.Random());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     const narration =
-        'Choose a memory game to play. Family Photo Match, Sound Memory, Pattern Sequence, or Reflex Target.';
+        'Choose a memory game to play. Family Photo Match, Real Sound Memory, Pattern Sequence, or Reflex Target.';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF9E6),
@@ -151,10 +168,10 @@ class GamesHubScreen extends ConsumerWidget {
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           physics: const BouncingScrollPhysics(),
-          itemCount: _games.length,
+          itemCount: _displayedGames.length,
           separatorBuilder: (_, __) => const SizedBox(height: 18),
           itemBuilder: (context, idx) {
-            final game = _games[idx];
+            final game = _displayedGames[idx];
 
             return InkWell(
               onTap: () {

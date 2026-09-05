@@ -16,14 +16,14 @@ class RecallObject {
     required this.id,
     required this.nameHi,
     required this.nameEn,
-    required this.icon,
+    required this.imagePath,
     required this.color,
   });
 
   final String id;
   final String nameHi;
   final String nameEn;
-  final IconData icon;
+  final String imagePath;
   final Color color;
 }
 
@@ -40,14 +40,15 @@ enum _Phase { showing, choosing, completed }
 
 class _RememberObjectsGameScreenState extends ConsumerState<RememberObjectsGameScreen> {
   static const List<RecallObject> _pool = [
-    RecallObject(id: 'diya', nameHi: 'दीया (Lamp)', nameEn: 'Oil Lamp', icon: Icons.lightbulb_rounded, color: Color(0xFFE65100)),
-    RecallObject(id: 'glasses', nameHi: 'चश्मा (Glasses)', nameEn: 'Spectacles', icon: Icons.visibility_rounded, color: Color(0xFF0288D1)),
-    RecallObject(id: 'keys', nameHi: 'चाबी (Keys)', nameEn: 'Key', icon: Icons.vpn_key_rounded, color: Color(0xFF5D4037)),
-    RecallObject(id: 'cup', nameHi: 'चाय का कप (Tea Cup)', nameEn: 'Tea Cup', icon: Icons.coffee_rounded, color: Color(0xFF6D4C41)),
-    RecallObject(id: 'book', nameHi: 'किताब (Book)', nameEn: 'Book', icon: Icons.menu_book_rounded, color: Color(0xFF2E7D32)),
-    RecallObject(id: 'umbrella', nameHi: 'छाता (Umbrella)', nameEn: 'Umbrella', icon: Icons.umbrella_rounded, color: Color(0xFF7B1FA2)),
-    RecallObject(id: 'apple', nameHi: 'सेब (Apple)', nameEn: 'Apple', icon: Icons.apple_rounded, color: Color(0xFFC62828)),
-    RecallObject(id: 'clock', nameHi: 'घड़ी (Clock)', nameEn: 'Clock', icon: Icons.access_time_rounded, color: Color(0xFF00695C)),
+    RecallObject(id: 'diya', nameHi: 'दीया (Lamp)', nameEn: 'Oil Lamp', imagePath: 'assets/images/targets/lamp.jpg', color: Color(0xFFE65100)),
+    RecallObject(id: 'eye', nameHi: 'आँख (Eye)', nameEn: 'Eye', imagePath: 'assets/images/targets/eye.jpg', color: Color(0xFF0288D1)),
+    RecallObject(id: 'keys', nameHi: 'चाबी (Key)', nameEn: 'Key', imagePath: 'assets/images/targets/key.jpg', color: Color(0xFF5D4037)),
+    RecallObject(id: 'cup', nameHi: 'चाय का कप (Cup)', nameEn: 'Tea Cup', imagePath: 'assets/images/targets/cup.jpg', color: Color(0xFF6D4C41)),
+    RecallObject(id: 'bell', nameHi: 'घंटी (Bell)', nameEn: 'Bell', imagePath: 'assets/images/targets/bell.jpg', color: Color(0xFF00897B)),
+    RecallObject(id: 'leaf', nameHi: 'पत्ता (Leaf)', nameEn: 'Leaf', imagePath: 'assets/images/targets/leaf.jpg', color: Color(0xFF2E7D32)),
+    RecallObject(id: 'flower', nameHi: 'फूल (Flower)', nameEn: 'Flower', imagePath: 'assets/images/targets/flower.jpg', color: Color(0xFFE91E63)),
+    RecallObject(id: 'sun', nameHi: 'सूरज (Sun)', nameEn: 'Sun', imagePath: 'assets/images/targets/sun.jpg', color: Color(0xFFFB8C00)),
+    RecallObject(id: 'heart', nameHi: 'दिल (Heart)', nameEn: 'Heart', imagePath: 'assets/images/targets/heart.jpg', color: Color(0xFFC62828)),
   ];
 
   final _rng = math.Random();
@@ -305,7 +306,15 @@ class _RememberObjectsGameScreenState extends ConsumerState<RememberObjectsGameS
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(obj.icon, size: 48, color: obj.color),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.asset(
+                                  obj.imagePath,
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                               const SizedBox(width: 18),
                               Text(
                                 obj.nameHi,
@@ -327,7 +336,7 @@ class _RememberObjectsGameScreenState extends ConsumerState<RememberObjectsGameS
                       crossAxisCount: 2,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: 1.1,
+                      childAspectRatio: 0.95,
                     ),
                     itemCount: _choices.length,
                     itemBuilder: (context, index) {
@@ -347,7 +356,6 @@ class _RememberObjectsGameScreenState extends ConsumerState<RememberObjectsGameS
                         borderRadius: BorderRadius.circular(22),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: cardBg,
                             borderRadius: BorderRadius.circular(22),
@@ -361,23 +369,42 @@ class _RememberObjectsGameScreenState extends ConsumerState<RememberObjectsGameS
                             ],
                           ),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Icon(obj.icon, size: 44, color: obj.color),
-                              const SizedBox(height: 8),
-                              Text(
-                                obj.nameHi,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
-                              ),
-                              if (isSelected) ...[
-                                const SizedBox(height: 4),
-                                Icon(
-                                  isTarget ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                                  color: isTarget ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
-                                  size: 22,
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                  child: Image.asset(
+                                    obj.imagePath,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        obj.nameHi,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                                      ),
+                                    ),
+                                    if (isSelected) ...[
+                                      const SizedBox(width: 4),
+                                      Icon(
+                                        isTarget ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                                        color: isTarget ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),

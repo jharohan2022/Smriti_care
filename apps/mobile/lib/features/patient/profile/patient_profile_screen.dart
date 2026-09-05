@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/auth_state_provider.dart';
 import '../../../core/services/family_members_service.dart';
 import '../../../core/services/patient_device_service.dart';
 import '../../../core/services/tts_service.dart';
+import '../../../core/services/cognitive_screening_service.dart';
+import '../../asha/assessment/cognitive_screening_dialog.dart';
 
 class PatientProfileScreen extends ConsumerStatefulWidget {
   const PatientProfileScreen({super.key});
@@ -14,6 +18,174 @@ class PatientProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
+  void _showPhotoSelectionDialog() {
+    final List<Map<String, String>> presets = [
+      {'label': 'Grandfather (दादाजी)', 'path': 'assets/images/family/grandfather.jpg'},
+      {'label': 'Father (पिताजी)', 'path': 'assets/images/family/father.jpg'},
+      {'label': 'Mother (माताजी)', 'path': 'assets/images/family/mother.jpg'},
+      {'label': 'Son (बेटा)', 'path': 'assets/images/family/son.jpg'},
+      {'label': 'Daughter (बेटी)', 'path': 'assets/images/family/daughter.jpg'},
+      {'label': 'ASHA Worker (आशा कार्यकर्ता)', 'path': 'assets/images/asha_hero.jpg'},
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.add_a_photo_rounded, color: Color(0xFF6B4EE6)),
+            SizedBox(width: 10),
+            Text('Choose Profile Photo (DP)', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Select a photo for your profile DP. This will be shown across all profile sections and games.',
+                style: TextStyle(fontSize: 13, color: Color(0xFF475569)),
+              ),
+              const SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: presets.length,
+                itemBuilder: (context, index) {
+                  final preset = presets[index];
+                  final path = preset['path']!;
+                  return GestureDetector(
+                    onTap: () {
+                      ref.read(patientDeviceProvider.notifier).updateProfilePhoto(path);
+                      ref.read(authStateProvider.notifier).updateProfilePhoto(path);
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profile photo (DP) updated successfully!'),
+                          backgroundColor: Color(0xFF16A34A),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFDDD6FE), width: 1.5),
+                        color: Colors.white,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 26,
+                            backgroundImage: AssetImage(path),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            preset['label']!.split(' ')[0],
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatar(String? photoPath) {
+    Widget avatarChild;
+
+    if (photoPath != null && photoPath.isNotEmpty) {
+      if (photoPath.startsWith('assets/')) {
+        avatarChild = CircleAvatar(
+          radius: 44,
+          backgroundImage: AssetImage(photoPath),
+        );
+      } else {
+        final file = File(photoPath);
+        if (file.existsSync()) {
+          avatarChild = CircleAvatar(
+            radius: 44,
+            backgroundImage: FileImage(file),
+          );
+        } else {
+          avatarChild = const CircleAvatar(
+            radius: 44,
+            backgroundColor: Color(0xFFEDE9FE),
+            child: Text('👴', style: TextStyle(fontSize: 44)),
+          );
+        }
+      }
+    } else {
+      avatarChild = const CircleAvatar(
+        radius: 44,
+        backgroundColor: Color(0xFFEDE9FE),
+        child: Text('👴', style: TextStyle(fontSize: 44)),
+      );
+    }
+
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6B4EE6), Color(0xFF3B82F6)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6B4EE6).withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: avatarChild,
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: _showPhotoSelectionDialog,
+            child: Container(
+              padding: const EdgeInsets.all(7),
+              decoration: const BoxDecoration(
+                color: Color(0xFF6B4EE6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.camera_alt_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   void _openAshaAdminDialog() {
     final pinController = TextEditingController();
     String? errorMessage;
@@ -142,6 +314,28 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
               onTap: () {
                 Navigator.pop(ctx);
                 context.push('/asha/dashboard');
+              },
+            ),
+
+            const Divider(),
+
+            // Option 0.5: 12-Question Cognitive Screening Assessment
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.psychology_rounded, color: Color(0xFFD97706)),
+              ),
+              title: const Text('12-Q Cognitive Screening (12-प्रश्न जांच)', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF92400E))),
+              subtitle: const Text('Evaluate dementia stage & calibrate ML game settings'),
+              trailing: const Icon(Icons.chevron_right, color: Color(0xFFD97706)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final patient = ref.read(patientDeviceProvider);
+                await CognitiveScreeningModal.show(context, patientName: patient.name);
               },
             ),
 
@@ -396,11 +590,7 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Color(0xFFEDE9FE),
-                      child: Text('👴', style: TextStyle(fontSize: 44)),
-                    ),
+                    _buildProfileAvatar(patient.profilePhotoPath ?? ref.watch(authStateProvider).user?.profilePhotoPath),
                     const SizedBox(height: 12),
                     Text(
                       patient.name,
@@ -434,6 +624,30 @@ class _PatientProfileScreenState extends ConsumerState<PatientProfileScreen> {
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF64748B),
                       ),
+                    ),
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final screening = ref.watch(cognitiveScreeningProvider);
+                        if (screening == null) return const SizedBox.shrink();
+                        final cfg = screening.config;
+                        return Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: cfg.stageColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: cfg.stageColor),
+                          ),
+                          child: Text(
+                            '🧠 ${cfg.stageLabel} • ${screening.totalScore}/24 Pts',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: cfg.stageColor,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

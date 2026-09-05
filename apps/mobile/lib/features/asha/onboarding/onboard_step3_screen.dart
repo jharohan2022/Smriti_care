@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../patients/asha_patient_repository.dart';
+import '../../../core/services/cognitive_screening_service.dart';
+import '../assessment/cognitive_screening_dialog.dart';
 
 class OnboardStep3Screen extends ConsumerStatefulWidget {
   const OnboardStep3Screen({super.key, this.prevData});
@@ -15,6 +17,18 @@ class OnboardStep3Screen extends ConsumerStatefulWidget {
 class _OnboardStep3ScreenState extends ConsumerState<OnboardStep3Screen> {
   String _selectedLanguage = 'Hindi';
   final List<String> _languages = ['Hindi', 'Bengali', 'Assamese', 'Bodo', 'English'];
+  ScreeningResult? _screeningResult;
+
+  void _runCognitiveScreening() async {
+    final data = widget.prevData ?? {};
+    final name = (data['name'] as String?) ?? 'Buzurg (मरीज़)';
+    final result = await CognitiveScreeningModal.show(context, patientName: name);
+    if (result != null) {
+      setState(() {
+        _screeningResult = result;
+      });
+    }
+  }
 
   void _handleConfirm() {
     final data = widget.prevData ?? {};
@@ -26,6 +40,18 @@ class _OnboardStep3ScreenState extends ConsumerState<OnboardStep3Screen> {
     final phone = (data['phone'] as String?) ?? '9876543211';
     final caregiver = (data['caregiver'] as String?) ?? 'Family Member';
 
+    final score = _screeningResult?.totalScore ?? 16;
+    final stageConfig = _screeningResult?.config ?? ScreeningResult.evaluateStage(score);
+
+    AshaTriageStatus status;
+    if (stageConfig.stage == 0) {
+      status = AshaTriageStatus.stable;
+    } else if (stageConfig.stage == 1) {
+      status = AshaTriageStatus.monitor;
+    } else {
+      status = AshaTriageStatus.needsAttention;
+    }
+
     final newPatient = AshaPatientRecord(
       id: 'PAT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
       name: name,
@@ -36,11 +62,15 @@ class _OnboardStep3ScreenState extends ConsumerState<OnboardStep3Screen> {
       language: _selectedLanguage,
       phone: phone,
       caregiverName: caregiver,
-      status: AshaTriageStatus.stable,
-      score: 8,
+      status: status,
+      score: (score / 2.4).round(), // converted to 10-pt scale for legacy display
       durationSec: 36,
-      trendNote: 'Initial baseline created. Ready for regular cognitive exercises.',
-      notes: ['New registration completed via ASHA Sathi onboarding wizard.'],
+      trendNote: '12-Q Screening: ${stageConfig.stageLabel} ($score/24 Pts). ${stageConfig.systemBehaviorSummary}',
+      notes: [
+        '12-Question Baseline Screening completed (${stageConfig.stageLabel}).',
+        'Clinical Status: ${stageConfig.clinicalStatus}.',
+        'System Difficulty: ${stageConfig.gameDifficultyMode} (${stageConfig.itemCount} items, ${stageConfig.timerSeconds}s timer).'
+      ],
     );
 
     ref.read(ashaPatientsProvider.notifier).addPatient(newPatient);
@@ -176,6 +206,70 @@ class _OnboardStep3ScreenState extends ConsumerState<OnboardStep3Screen> {
                         ),
                       ),
                       const Icon(Icons.chevron_right_rounded, color: Color(0xFF64748B)),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // 12-Question Initial Cognitive Screening Protocol Card
+              InkWell(
+                onTap: _runCognitiveScreening,
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _screeningResult != null ? const Color(0xFFECFDF5) : const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: _screeningResult != null ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                      width: 1.8,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          _screeningResult != null ? Icons.verified_rounded : Icons.assignment_late_rounded,
+                          color: _screeningResult != null ? const Color(0xFF10B981) : const Color(0xFFD97706),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _screeningResult != null
+                                  ? '12-Q Cognitive Baseline Completed'
+                                  : '12-Q Cognitive Baseline Screening',
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _screeningResult != null
+                                  ? '${_screeningResult!.config.stageLabel} • ${_screeningResult!.totalScore}/24 Pts'
+                                  : 'Tap to ask 12 screening questions to set patient dementia stage',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: _screeningResult != null ? const Color(0xFF047857) : const Color(0xFFB45309),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: _screeningResult != null ? const Color(0xFF10B981) : const Color(0xFFD97706),
+                      ),
                     ],
                   ),
                 ),

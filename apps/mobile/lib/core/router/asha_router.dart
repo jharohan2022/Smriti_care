@@ -11,6 +11,7 @@ import '../../features/asha/assessment/asha_trend_analysis_screen.dart';
 import '../../features/asha/auth/asha_login_screen.dart';
 import '../../features/asha/dashboard/asha_dashboard_screen.dart';
 import '../../features/asha/followup/asha_followup_screen.dart';
+import '../../features/asha/onboarding/onboard_family_members_screen.dart';
 import '../../features/asha/onboarding/onboard_step1_screen.dart';
 import '../../features/asha/onboarding/onboard_step2_screen.dart';
 import '../../features/asha/onboarding/onboard_step3_screen.dart';
@@ -49,7 +50,7 @@ final ashaRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardStep1Screen(),
       ),
 
-      // 4. Village & Language (Step 2 of 3: Gaon ka Chayan)
+      // 4. Village & Language (Step 2 of 4: Gaon ka Chayan)
       GoRoute(
         path: '/asha/onboard/step2',
         builder: (context, state) => OnboardStep2Screen(
@@ -57,7 +58,15 @@ final ashaRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // 5. Confirm Language (Step 3 of 3: Bhasha ki Pushti)
+      // 5. Family Members Registration (Step 3 of 4: 6 Members Compulsory)
+      GoRoute(
+        path: '/asha/onboard/step3-family',
+        builder: (context, state) => OnboardFamilyMembersScreen(
+          prevData: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+
+      // 6. Confirm Registration (Step 4 of 4: Bhasha ki Pushti)
       GoRoute(
         path: '/asha/onboard/step3',
         builder: (context, state) => OnboardStep3Screen(

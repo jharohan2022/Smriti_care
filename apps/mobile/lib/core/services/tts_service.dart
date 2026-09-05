@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../api/api_client.dart';
+import 'speech_mode_provider.dart';
 
 /// Persistent narration for the zero-literacy patient UI.
 ///
@@ -24,9 +25,19 @@ class TtsService {
   final AudioPlayer _player = AudioPlayer();
 
   /// Speak [text] in [langCode] (BCP-47-ish: 'hi', 'ta', 'bn', 'en').
+  /// If speech mode is disabled, this becomes a no‑op.
   Future<void> speak(String text, {String langCode = 'hi'}) async {
-    if (await _speakViaBhashini(text, langCode)) return;
-    await _speakOnDevice(text, langCode);
+    final container = ProviderContainer();
+    final enabled = container.read(speechModeProvider);
+    if (!enabled) return;
+    final words = text.split(' ');
+    for (final word in words) {
+      container.read(speakingWordProvider.notifier).state = word;
+      if (await _speakViaBhashini(word, langCode)) continue;
+      await _speakOnDevice(word, langCode);
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
+    container.read(speakingWordProvider.notifier).state = null;
   }
 
   Future<bool> _speakViaBhashini(String text, String langCode) async {

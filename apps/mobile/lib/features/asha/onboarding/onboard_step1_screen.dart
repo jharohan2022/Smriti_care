@@ -15,6 +15,7 @@ class _OnboardStep1ScreenState extends State<OnboardStep1Screen> {
   final _caregiverController = TextEditingController(text: 'Suresh Das (Son)');
 
   String _gender = 'Purush';
+  String _photoPath = 'assets/images/family/grandfather.jpg';
 
   @override
   void dispose() {
@@ -42,6 +43,7 @@ class _OnboardStep1ScreenState extends State<OnboardStep1Screen> {
         'gender': _gender,
         'phone': _phoneController.text.trim(),
         'caregiver': _caregiverController.text.trim(),
+        'photoPath': _photoPath,
       },
     );
   }
@@ -90,7 +92,73 @@ class _OnboardStep1ScreenState extends State<OnboardStep1Screen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // Profile DP Photo Selection
+              Center(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 36,
+                          backgroundImage: AssetImage(_photoPath),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: emeraldBrand,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    const Text('Buzurg ki Profile Photo (DP Photo)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: emeraldBrand)),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          'assets/images/family/grandfather.jpg',
+                          'assets/images/family/father.jpg',
+                          'assets/images/family/mother.jpg',
+                          'assets/images/family/son.jpg',
+                          'assets/images/family/daughter.jpg',
+                        ].map((path) {
+                          final isSel = _photoPath == path;
+                          return GestureDetector(
+                            onTap: () => setState(() => _photoPath = path),
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSel ? emeraldBrand : Colors.transparent,
+                                  width: 2.5,
+                                ),
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundImage: AssetImage(path),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
 
               // Form fields
               TextField(
