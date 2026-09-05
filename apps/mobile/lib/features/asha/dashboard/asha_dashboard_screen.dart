@@ -158,56 +158,58 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const emeraldBrand = Color(0xFF059669);
+    const coralPrimary = Color(0xFFD32F2F);
     const textDark = Color(0xFF0F172A);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Image.asset(
-            'assets/images/app_logo.png',
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Icon(Icons.spa, color: emeraldBrand),
-          ),
-        ),
-        title: Text(
-          _getAppBarTitle(),
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            color: textDark,
-          ),
-        ),
-        actions: [
-          if (_currentNavIndex == 1) ...[
-            IconButton(
-              icon: const Icon(Icons.person_add_alt_1_rounded, color: emeraldBrand, size: 26),
-              tooltip: 'Naya Buzurg Jodein',
-              onPressed: () => context.push('/asha/onboard'),
+      appBar: _currentNavIndex == 0
+          ? null
+          : AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              surfaceTintColor: Colors.transparent,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.spa, color: coralPrimary),
+                ),
+              ),
+              title: Text(
+                _getAppBarTitle(),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: textDark,
+                ),
+              ),
+              actions: [
+                if (_currentNavIndex == 1) ...[
+                  IconButton(
+                    icon: const Icon(Icons.person_add_alt_1_rounded, color: coralPrimary, size: 26),
+                    tooltip: 'Naya Beneficiary Jodein',
+                    onPressed: () => context.push('/asha/onboard'),
+                  ),
+                ] else if (_currentNavIndex == 2 || _currentNavIndex == 3) ...[
+                  IconButton(
+                    icon: const Icon(Icons.add_task_rounded, color: coralPrimary, size: 26),
+                    tooltip: 'Visit Schedule Karein',
+                    onPressed: () => _showScheduleVisitModal(),
+                  ),
+                ],
+                IconButton(
+                  icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B), size: 22),
+                  tooltip: 'Logout ASHA',
+                  onPressed: () {
+                    ref.read(ashaAuthProvider.notifier).logout();
+                    context.go('/asha/login');
+                  },
+                ),
+                const SizedBox(width: 6),
+              ],
             ),
-          ] else if (_currentNavIndex == 2) ...[
-            IconButton(
-              icon: const Icon(Icons.add_task_rounded, color: emeraldBrand, size: 26),
-              tooltip: 'Visit Schedule Karein',
-              onPressed: () => _showScheduleVisitModal(),
-            ),
-          ],
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B), size: 22),
-            tooltip: 'Logout ASHA',
-            onPressed: () {
-              ref.read(ashaAuthProvider.notifier).logout();
-              context.go('/asha/login');
-            },
-          ),
-          const SizedBox(width: 6),
-        ],
-      ),
       body: SafeArea(
         child: IndexedStack(
           index: _currentNavIndex,
@@ -225,7 +227,7 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 14,
               offset: const Offset(0, -3),
             ),
@@ -236,15 +238,15 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_rounded, 'Home'),
-                _buildNavItem(1, Icons.group_rounded, 'Patients'),
-                _buildNavItem(2, Icons.calendar_month_rounded, 'Visits'),
-                _buildNavItem(3, Icons.notifications_active_rounded, 'Alerts', badgeCount: _alertsList.where((a) => a['isResolved'] == false).length),
-                _buildNavItem(4, Icons.more_horiz_rounded, 'More'),
+                _buildNavItem(0, Icons.home_outlined, Icons.home_rounded, 'HOME'),
+                _buildNavItem(1, Icons.group_outlined, Icons.group_rounded, 'BENEFICIARIES'),
+                _buildNavItem(2, Icons.calendar_month_outlined, Icons.calendar_month_rounded, 'DAILY TRACKING'),
+                _buildNavItem(3, Icons.other_houses_outlined, Icons.other_houses_rounded, 'HOME VISITS'),
+                _buildNavItem(4, Icons.grid_view_outlined, Icons.grid_view_rounded, 'MORE'),
               ],
             ),
           ),
@@ -256,13 +258,13 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
   String _getAppBarTitle() {
     switch (_currentNavIndex) {
       case 0:
-        return 'ASHA Sathi Home';
+        return 'ASHA Dashboard';
       case 1:
-        return 'Mere Buzurg';
+        return 'Beneficiaries (लाभार्थी)';
       case 2:
-        return 'Ghar Bhraman (Visits)';
+        return 'Daily Tracking (दैनिक कार्य)';
       case 3:
-        return 'Zaroori Alerts';
+        return 'Home Visits (गृह भ्रमण)';
       case 4:
         return 'Settings & Tools';
       default:
@@ -271,401 +273,358 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
   }
 
   // ==========================================
-  // TAB 0: ASHA HOME VIEW
+  // TAB 0: ASHA HOME VIEW (EXACT UI FROM DESIGN)
   // ==========================================
   Widget _buildHomeView() {
     final allPatients = ref.watch(ashaPatientsProvider);
-    final stableCount = allPatients.where((p) => p.status == AshaTriageStatus.stable).length;
-    final monitorCount = allPatients.where((p) => p.status == AshaTriageStatus.monitor).length;
-    final attentionCount = allPatients.where((p) => p.status == AshaTriageStatus.needsAttention).length;
-
-    const emeraldBrand = Color(0xFF059669);
-    const textDark = Color(0xFF0F172A);
 
     return RefreshIndicator(
       onRefresh: () async => await Future.delayed(const Duration(milliseconds: 400)),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        children: [
-          // 1. ASHA Welcome Banner
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF065F46), Color(0xFF059669), Color(0xFF10B981)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            // 1. Red Header Container with Profile, Info & Hero Cards
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFE53935), Color(0xFFD32F2F), Color(0xFFC62828)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
               ),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: emeraldBrand.withOpacity(0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+              padding: const EdgeInsets.only(left: 18, right: 18, top: 16, bottom: 22),
+              child: Column(
+                children: [
+                  // Top Profile Row
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Colors.white,
+                        child: Text(
+                          'RK',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFD32F2F),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Namaskar',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                            const Text(
+                              'Rubi Kumari',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                height: 1.15,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'I C D S BHAWAN 115 (10207070607)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.85),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Notification Bell
+                      Stack(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.notifications_none_rounded,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF22C55E),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1.5),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  child: const Center(
-                    child: Text('👩‍⚕️', style: TextStyle(fontSize: 28)),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
+
+                  const SizedBox(height: 20),
+
+                  // 3 Asymmetric Hero Cards (Beneficiaries, Daily Tracking, Home Visits)
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Namaste Sunita Didi! 🙏',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Sonapur PHC • Rampur Sub-centre',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '⚡ All Sync Systems Online',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      // Left Tall Vertical Card: Beneficiaries
+                      Expanded(
+                        flex: 1,
+                        child: InkWell(
+                          onTap: () => setState(() => _currentNavIndex = 1),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            height: 216,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Beneficiaries',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'List of all beneficiaries in your AWC',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
+                                ),
+                                const Spacer(),
+                                // Illustration Graphic
+                                Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Container(
+                                    height: 84,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: const Center(
+                                      child: Text('🤱👵👶', style: TextStyle(fontSize: 42)),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Right Column (Daily Tracking & Home Visits Stacked Vertically)
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          children: [
+                            // Top Card: Daily Tracking
+                            InkWell(
+                              onTap: () => setState(() => _currentNavIndex = 2),
+                              borderRadius: BorderRadius.circular(18),
+                              child: Container(
+                                height: 102,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Daily Tracking',
+                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Perform your daily activity',
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Text('📅⏱️', style: TextStyle(fontSize: 26)),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            // Bottom Card: Home Visits
+                            InkWell(
+                              onTap: () => setState(() => _currentNavIndex = 3),
+                              borderRadius: BorderRadius.circular(18),
+                              child: Container(
+                                height: 102,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            'Home Visits',
+                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Colors.white),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Plan your home visits today',
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Text('👩‍⚕️🏡', style: TextStyle(fontSize: 26)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 18),
-
-          // 2. Metrics 2x2 Grid
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricCard(
-                  title: 'Kul Buzurg',
-                  value: '${allPatients.length}',
-                  subtitle: 'Registered',
-                  icon: Icons.group_rounded,
-                  color: const Color(0xFF059669),
-                  onTap: () => setState(() => _currentNavIndex = 1),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildMetricCard(
-                  title: 'Aaj ki Visits',
-                  value: '3 Due',
-                  subtitle: 'Home Visits',
-                  icon: Icons.calendar_month_rounded,
-                  color: const Color(0xFF2563EB),
-                  onTap: () => setState(() => _currentNavIndex = 2),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildMetricCard(
-                  title: 'High Risk Alert',
-                  value: '$attentionCount Alert',
-                  subtitle: 'Action Needed',
-                  icon: Icons.warning_amber_rounded,
-                  color: const Color(0xFFEF4444),
-                  onTap: () => setState(() => _currentNavIndex = 3),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildMetricCard(
-                  title: 'Screening',
-                  value: '28 Purna',
-                  subtitle: 'This Month',
-                  icon: Icons.fact_check_rounded,
-                  color: const Color(0xFF8B5CF6),
-                  onTap: () => context.push('/asha/assessment/intro'),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 22),
-
-          // 3. Quick Action Hub
-          const Text(
-            'Quick Actions (तुरंत कार्य)',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              color: textDark,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickActionButton(
-                  icon: Icons.person_add_alt_1_rounded,
-                  label: 'Naya Buzurg\nJodein',
-                  color: const Color(0xFF059669),
-                  onTap: () => context.push('/asha/onboard'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildQuickActionButton(
-                  icon: Icons.psychology_rounded,
-                  label: 'Screening\nGame Shuru',
-                  color: const Color(0xFF6366F1),
-                  onTap: () => context.push('/asha/assessment/intro'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildQuickActionButton(
-                  icon: Icons.edit_calendar_rounded,
-                  label: 'Visit\nSchedule',
-                  color: const Color(0xFF0284C7),
-                  onTap: () => _showScheduleVisitModal(),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildQuickActionButton(
-                  icon: Icons.local_hospital_rounded,
-                  label: 'Doctor\nReferral',
-                  color: const Color(0xFFD97706),
-                  onTap: () {
-                    if (allPatients.isNotEmpty) {
-                      context.push('/asha/action/${allPatients.first.id}', extra: allPatients.first);
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 22),
-
-          // 4. Today's Priority Schedule Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Text(
-                  'Aaj ke Karyakram (Today’s Schedule)',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                    color: textDark,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () => setState(() => _currentNavIndex = 2),
-                child: const Text(
-                  'Sabhi ➔',
-                  style: TextStyle(fontWeight: FontWeight.w800, color: emeraldBrand),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-
-          // Today's Priority Visit Cards
-          ..._visitsList.where((v) => v['dateCategory'] == 'Aaj').map((visit) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: visit['priority'] == 'High' ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
                 ],
               ),
-              child: Row(
+            ),
+
+            const SizedBox(height: 20),
+
+            // 2. Action Center Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.access_time_filled_rounded, size: 16, color: Color(0xFF475569)),
-                        const SizedBox(height: 2),
-                        Text(
-                          visit['time'],
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
-                        ),
-                      ],
+                  const Text(
+                    'Action Center',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF475569),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              visit['name'],
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: textDark),
-                            ),
-                            const SizedBox(width: 6),
-                            if (visit['priority'] == 'High')
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEE2E2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  'HIGH RISK',
-                                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFDC2626)),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          visit['purpose'],
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          visit['village'],
-                          style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
-                        ),
-                      ],
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Find Most Used Actions Quickly',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.play_circle_fill_rounded, color: emeraldBrand, size: 34),
-                    tooltip: 'Start Assessment',
-                    onPressed: () => context.push('/asha/assessment/intro'),
+                  const SizedBox(height: 20),
+
+                  // 3x3 Circular Action Grid
+                  GridView.count(
+                    crossAxisCount: 3,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 18,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 0.78,
+                    children: [
+                      // Row 1
+                      _buildActionCenterItem(
+                        badgeLabel: 'Non Aadhaar',
+                        badgeColor: const Color(0xFFD32F2F),
+                        icon: Icons.person_search_rounded,
+                        title: 'Registration\nStatus',
+                        onTap: () => setState(() => _currentNavIndex = 1),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.person_add_alt_1_rounded,
+                        title: 'Register\nBeneficiary',
+                        onTap: () => context.push('/asha/onboard'),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.phonelink_setup_rounded,
+                        title: 'Verify Mobile',
+                        onTap: () => context.push('/asha/assessment/intro'),
+                      ),
+
+                      // Row 2
+                      _buildActionCenterItem(
+                        badgeLabel: 'Attention',
+                        badgeColor: const Color(0xFFD32F2F),
+                        icon: Icons.person_pin_rounded,
+                        title: 'Upcoming\nBeneficiary Changes',
+                        onTap: () => setState(() => _currentNavIndex = 1),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.notifications_active_rounded,
+                        title: 'Beneficiary\nInterface Request',
+                        onTap: () => setState(() => _currentNavIndex = 3),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.assignment_ind_rounded,
+                        title: 'Beneficiary\nRedressal',
+                        onTap: () => setState(() => _currentNavIndex = 3),
+                      ),
+
+                      // Row 3
+                      _buildActionCenterItem(
+                        icon: Icons.accessibility_new_rounded,
+                        title: 'Cognitive\nBaseline',
+                        onTap: () => context.push('/asha/assessment/intro'),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.vaccines_rounded,
+                        title: 'Vaccination &\nScreening',
+                        onTap: () => context.push('/asha/assessment/baseline'),
+                      ),
+                      _buildActionCenterItem(
+                        icon: Icons.swap_horizontal_circle_rounded,
+                        title: 'Follow-up\nReferral',
+                        onTap: () {
+                          if (allPatients.isNotEmpty) {
+                            context.push('/asha/action/${allPatients.first.id}', extra: allPatients.first);
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
-            );
-          }),
-
-          const SizedBox(height: 16),
-
-          // 5. Village Triage Overview Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.pie_chart_rounded, color: emeraldBrand, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Gaon Cognitive Health Overview',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: textDark),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: stableCount == 0 && monitorCount == 0 && attentionCount == 0 ? 1 : (stableCount > 0 ? stableCount : 1),
-                      child: Container(
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      flex: monitorCount > 0 ? monitorCount : 1,
-                      child: Container(
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      flex: attentionCount > 0 ? attentionCount : 1,
-                      child: Container(
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 6,
-                  children: [
-                    _buildLegendItem('Stable ($stableCount)', const Color(0xFF10B981)),
-                    _buildLegendItem('Monitor ($monitorCount)', const Color(0xFFF59E0B)),
-                    _buildLegendItem('Needs Attention ($attentionCount)', const Color(0xFFEF4444)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
+
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -1570,15 +1529,81 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label, {int badgeCount = 0}) {
-    const emeraldBrand = Color(0xFF059669);
+  Widget _buildActionCenterItem({
+    String? badgeLabel,
+    Color badgeColor = const Color(0xFFD32F2F),
+    required IconData icon,
+    Color iconColor = const Color(0xFFD32F2F),
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (badgeLabel != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              margin: const EdgeInsets.only(bottom: 4),
+              decoration: BoxDecoration(
+                color: badgeColor,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                badgeLabel,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 18),
+
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF334155),
+              height: 1.15,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData outlineIcon, IconData filledIcon, String label, {int badgeCount = 0}) {
+    const coralPrimary = Color(0xFFD32F2F);
     final isSelected = _currentNavIndex == index;
 
     return InkWell(
       onTap: () => setState(() => _currentNavIndex = index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1586,9 +1611,9 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
               clipBehavior: Clip.none,
               children: [
                 Icon(
-                  icon,
+                  isSelected ? filledIcon : outlineIcon,
                   size: 24,
-                  color: isSelected ? emeraldBrand : const Color(0xFF64748B),
+                  color: isSelected ? coralPrimary : const Color(0xFF64748B),
                 ),
                 if (badgeCount > 0)
                   Positioned(
@@ -1608,13 +1633,14 @@ class _AshaDashboardScreenState extends ConsumerState<AshaDashboardScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? emeraldBrand : const Color(0xFF64748B),
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                color: isSelected ? coralPrimary : const Color(0xFF64748B),
+                letterSpacing: 0.2,
               ),
             ),
           ],
