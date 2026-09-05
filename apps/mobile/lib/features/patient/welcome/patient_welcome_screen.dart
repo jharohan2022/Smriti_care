@@ -24,268 +24,249 @@ class _PatientWelcomeScreenState extends ConsumerState<PatientWelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const brandPurple = Color(0xFF6B4EE6);
-    const softPurple = Color(0xFFF3F0FF);
-    const textDark = Color(0xFF1E1B4B);
+    const brandPurple = Color(0xFF5B43D6);
+    const textNavy = Color(0xFF1E1B6B);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 8),
-
-              // Smarana Logo & Header
-              Center(
-                child: Column(
-                  children: [
-                    Image.asset(
-                      'assets/images/app_logo.png',
-                      height: 80,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.spa,
-                        size: 64,
-                        color: brandPurple,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Smarana',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1E1B4B),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Har Yaad, Hamare Saath',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF475569),
-                      ),
-                    ),
-                  ],
+      body: Stack(
+        children: [
+          // 1. Full-bleed background hero illustration (elderly couple facing hills)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/smarana_hero.jpg',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              errorBuilder: (_, __, ___) => Container(
+                color: const Color(0xFFEDE9FE),
+                child: const Center(
+                  child: Icon(Icons.nature_people, size: 90, color: brandPurple),
                 ),
               ),
+            ),
+          ),
 
-              const SizedBox(height: 16),
-
-              // Hero Illustration Container with Quote Tag
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: brandPurple.withOpacity(0.12),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
-                    ),
+          // 2. Soft top gradient overlay for crystal clear text readability
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 280,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white.withOpacity(0.85),
+                    Colors.white.withOpacity(0.65),
+                    Colors.white.withOpacity(0.0),
                   ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Stack(
+              ),
+            ),
+          ),
+
+          // 3. Main Content Layer
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+
+                // Top Header: Logo + Smarana + Subtitle
+                Center(
+                  child: Column(
                     children: [
                       Image.asset(
-                        'assets/images/smarana_hero.jpg',
-                        height: 280,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: 280,
-                          color: const Color(0xFFEDE9FE),
-                          child: const Center(
-                            child: Icon(Icons.nature_people, size: 80, color: brandPurple),
-                          ),
+                        'assets/images/app_logo.png',
+                        height: 76,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.spa,
+                          size: 64,
+                          color: brandPurple,
                         ),
                       ),
-                      // Floating Quote Badge
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        right: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.92),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '🌸',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Zindagi ke har lamhe ko saath mein... ❤️',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF4C1D95),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Big Action Button: "Chaliye Shuru Karein ➔"
-              SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: ElevatedButton(
-                  onPressed: () {
-                    context.go('/greeting');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: brandPurple,
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                    shadowColor: brandPurple.withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Chaliye Shuru Karein',
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Smarana',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: textNavy,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Har Yaad, Hamare Saath',
+                        style: TextStyle(
+                          fontSize: 15,
                           fontWeight: FontWeight.w800,
+                          color: Color(0xFF282370),
                           letterSpacing: 0.2,
                         ),
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.arrow_forward_rounded, size: 24),
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 12),
-
-              // ASHA Sathi Application Access Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    context.push('/asha/login');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFECFDF5),
-                    foregroundColor: const Color(0xFF065F46),
-                    elevation: 2,
-                    shadowColor: const Color(0xFF059669).withOpacity(0.25),
-                    side: const BorderSide(color: Color(0xFF059669), width: 1.8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: const FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
+                // Middle Sky Area: Floating Cursive Quotation
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.health_and_safety_rounded, color: Color(0xFF059669), size: 22),
-                        SizedBox(width: 8),
                         Text(
-                          'ASHA Sathi App (आशा साथी पोर्टल)',
+                          'Zindagi ke\nhar lamhe ko\nsaath mein... ♡',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 22,
+                            height: 1.35,
+                            fontStyle: FontStyle.italic,
                             fontWeight: FontWeight.w800,
-                            color: Color(0xFF065F46),
+                            color: const Color(0xFF262074),
+                            shadows: [
+                              Shadow(
+                                color: Colors.white.withOpacity(0.9),
+                                blurRadius: 12,
+                              ),
+                              Shadow(
+                                color: Colors.white.withOpacity(0.8),
+                                blurRadius: 6,
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.arrow_forward_rounded, color: Color(0xFF059669), size: 20),
                       ],
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                // Bottom Overlay Card Container
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 20,
+                        offset: const Offset(0, -6),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Primary Button: "Chaliye Shuru Karein ➔"
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.go('/greeting');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: brandPurple,
+                            foregroundColor: Colors.white,
+                            elevation: 4,
+                            shadowColor: brandPurple.withOpacity(0.35),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Chaliye Shuru Karein',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward_rounded, size: 22),
+                            ],
+                          ),
+                        ),
+                      ),
 
-              // Trust & Accessibility Badges (No Login, Native Dialect, Offline)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: softPurple,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFDDD6FE)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.lock_open_rounded, size: 16, color: brandPurple),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            'Koi login nahi | Sirf aap aur hum',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: textDark.withOpacity(0.85),
+                      const SizedBox(height: 10),
+
+                      // ASHA Sathi Access Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.push('/asha/login');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFECFDF5),
+                            foregroundColor: const Color(0xFF065F46),
+                            elevation: 0,
+                            side: const BorderSide(color: Color(0xFF059669), width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.health_and_safety_rounded, color: Color(0xFF059669), size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'ASHA Sathi App (आशा साथी पोर्टल)',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF065F46),
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Icon(Icons.arrow_forward_rounded, color: Color(0xFF059669), size: 18),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.wifi_off_rounded, size: 16, color: Color(0xFF059669)),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            'Aapki Boli Mein | Offline Bhi Kaam Kare',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF065F46),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                      ),
 
-              const SizedBox(height: 16),
-            ],
+                      const SizedBox(height: 14),
+
+                      // Bottom Trust Subtitles
+                      const Text(
+                        'Koi login nahi  |  Sirf aap aur hum',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Aapki Boli Mein  |  Offline Bhi Kaam Kare',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF059669),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
