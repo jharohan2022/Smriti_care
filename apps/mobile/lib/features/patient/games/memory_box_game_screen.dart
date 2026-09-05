@@ -145,15 +145,11 @@ class _MemoryBoxGameScreenState extends ConsumerState<MemoryBoxGameScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => GameCompletionDialog(
-        gameTitle: 'Memory Box (विज़ुअल रिकॉल)',
-        score: _score,
+        title: 'Memory Box (विज़ुअल रिकॉल)',
+        subtitle: 'आपने ${_targetItems.length} में से $correctCount वस्तुएं सही पहचानीं।',
+        stars: correctCount == _targetItems.length ? 3 : (correctCount > 0 ? 2 : 1),
         onPlayAgain: () {
-          Navigator.pop(ctx);
           _setupGame();
-        },
-        onNextGame: () {
-          Navigator.pop(ctx);
-          context.go('/game/meri-duniya');
         },
       ),
     );

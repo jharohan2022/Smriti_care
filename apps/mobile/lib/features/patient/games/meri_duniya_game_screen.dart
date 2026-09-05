@@ -123,20 +123,16 @@ class _MeriDuniyaGameScreenState extends ConsumerState<MeriDuniyaGameScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => GameCompletionDialog(
-          gameTitle: 'Meri Duniya (स्थानिक क्षमता)',
-          score: (_score * 10 / (_questions.length * 10)).round(),
+          title: 'Meri Duniya (स्थानिक क्षमता)',
+          subtitle: 'शाबाश! आपने गाँव के रास्ते याद रखे।',
+          stars: 3,
           onPlayAgain: () {
-            Navigator.pop(ctx);
             setState(() {
               _currentIndex = 0;
               _selectedOptionId = null;
               _score = 0;
             });
             _playQuestionPrompt();
-          },
-          onNextGame: () {
-            Navigator.pop(ctx);
-            context.go('/game/memory-tree');
           },
         ),
       );

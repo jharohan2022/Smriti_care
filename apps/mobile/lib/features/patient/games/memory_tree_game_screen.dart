@@ -88,20 +88,16 @@ class _MemoryTreeGameScreenState extends ConsumerState<MemoryTreeGameScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => GameCompletionDialog(
-          gameTitle: 'Memory Tree (परिवार पहचान)',
-          score: finalPercentage,
+          title: 'Memory Tree (परिवार पहचान)',
+          subtitle: 'आपने परिवार के सदस्यों को सफलतापूर्वक पहचाना!',
+          stars: 3,
           onPlayAgain: () {
-            Navigator.pop(ctx);
             setState(() {
               _currentIndex = 0;
               _selectedRelation = null;
               _score = 0;
             });
             _playAudioPrompt();
-          },
-          onNextGame: () {
-            Navigator.pop(ctx);
-            context.go('/game/mera-bazaar');
           },
         ),
       );

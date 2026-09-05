@@ -127,20 +127,16 @@ class _MeraBazaarGameScreenState extends ConsumerState<MeraBazaarGameScreen> {
         context: context,
         barrierDismissible: false,
         builder: (ctx) => GameCompletionDialog(
-          gameTitle: 'Mera Bazaar (मेरा बाज़ार)',
-          score: (_score * 10 / (_tasks.length * 10)).round(),
+          title: 'Mera Bazaar (मेरा बाज़ार)',
+          subtitle: 'शानदार! आपने बाज़ार की खरीदारी पूरी कर ली।',
+          stars: 3,
           onPlayAgain: () {
-            Navigator.pop(ctx);
             setState(() {
               _currentTaskIndex = 0;
               _selectedBalance = null;
               _score = 0;
             });
             _playTaskPrompt();
-          },
-          onNextGame: () {
-            Navigator.pop(ctx);
-            context.go('/khel');
           },
         ),
       );
