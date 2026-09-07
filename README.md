@@ -1,4 +1,4 @@
-# SmritiCare — AI MedTech Platform for Dementia Care in Remote Regions
+# Smarana — AI MedTech Platform for Dementia Care in Remote Regions
 
 > _Smriti (स्मृति) = "memory". An offline-first platform connecting elderly dementia
 > patients, ASHA/caregivers, neurologists, and system administrators._
